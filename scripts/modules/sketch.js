@@ -2,13 +2,40 @@ export default class Sketch {
   constructor(canvas) {
     this.canvas = document.getElementById(canvas)
     this.context = this.canvas.getContext('2d')
+    this.pressed = false;
+    
+    this.x = undefined;
+    this.y = undefined;
+  }
+
+  mouseRecognitions() {
+    this.canvas.addEventListener('mousedown', (event) => {
+      this.pressed = true;
+      console.log('oi')
+
+      this.x = event.offsetX;
+      this.y = event.offsetY;
+    })
+
+    this.canvas.addEventListener('mouseup', (event) => {
+      console.log(event)
+      this.pressed = false;
+
+      this.x = undefined;
+      this.y = undefined;
+    })
   }
 
   setup() {
+    this.mouseRecognitions();
+    this.drawTesting();
+  }
+
+  drawLine() {
 
   }
 
-  draw() {
+  drawTesting() {
     // this.context.fillStyle = "rgb(200,0,0)"
     // this.context.fillRect (10, 10, 55, 50);
 
