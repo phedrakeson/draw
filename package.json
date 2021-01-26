@@ -1,0 +1,25 @@
+{
+  "name": "draw",
+  "version": "1.0.0",
+  "description": "🖌 Web App que fornece uma ferramenta para desenhar qualquer coisa, seja criativo!",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack --mode development --watch --entry ./scripts/main.js -o ./",
+    "build": "webpack --mode production --entry ./scripts/main.js -o ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phedrakeson/draw.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/phedrakeson/draw/issues"
+  },
+  "homepage": "https://github.com/phedrakeson/draw#readme",
+  "devDependencies": {
+    "eslint": "^7.18.0",
+    "webpack": "^5.17.0",
+    "webpack-cli": "^4.4.0"
+  }
+}
