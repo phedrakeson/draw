@@ -11,14 +11,12 @@ export default class Sketch {
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', (event) => {
       this.pressed = true;
-      console.log('oi')
 
       this.x = event.offsetX;
       this.y = event.offsetY;
     })
 
     this.canvas.addEventListener('mouseup', (event) => {
-      console.log(event)
       this.pressed = false;
 
       this.x = undefined;
