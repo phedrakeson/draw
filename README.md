@@ -16,7 +16,7 @@ O projeto ainda está em desenvolvimento e as próximas atualizações serão vo
 
 - [x] Tornar possível desenhar no board
 - [x] Possibilidade de desenhar no mobile, reconhecendo mais de um toque.
-- [ ] Ajuste no suporte mobile
+- [x] Ajuste no suporte mobile
 - [ ] Painel de configurações
 
 ## 📫 Contribuindo para o Draw
