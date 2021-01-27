@@ -24,7 +24,7 @@ body {
 
 #configs {
   width: 100%;
-  height: 60px;
+  height: 80px;
   background: #013243;
   overflow: hidden;
   position: absolute;
@@ -34,10 +34,9 @@ body {
   box-shadow: 5px 0px 10px 0px rgba(46, 49, 49, 0.6);
 
   padding: 15px 60px 15px 60px;
-}
 
-.config-container {
   display: flex;
+  align-items: center;
   justify-content: flex-start;
 }
 
@@ -45,9 +44,19 @@ body {
   background: #e4f1fe;
   padding: 10px 15px 10px 15px;
   margin: 10px;
+  font-size: 2.4rem;
+  border-radius: 0.5rem;
+  font-family: monospace;
 }
 
 #decrease,
 #increase {
   padding: 5px 10px 5px 10px;
+  font-size: 2rem;
+}
+
+#color {
+  width: 30px;
+  height: 30px;
+  margin: 20px;
 }
