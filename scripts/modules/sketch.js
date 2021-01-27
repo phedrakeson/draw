@@ -6,19 +6,26 @@ export default class Sketch {
     
     this.x = undefined;
     this.y = undefined;
+
+    this.ongoingTouches = new Array;
+
+    this.handleStart = this.handleStart.bind(this);
+    this.handleEnd = this.handleEnd.bind(this);
+    this.handleMove = this.handleMove.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
+    this.copyTouch = this.copyTouch.bind(this)
   }
 
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', (event) => {
       this.pressed = true;
-      console.log('oi')
 
       this.x = event.offsetX;
       this.y = event.offsetY;
     })
 
-    this.canvas.addEventListener('mouseup', (event) => {
-      console.log(event)
+    this.canvas.addEventListener('mouseup', () => {
       this.pressed = false;
 
       this.x = undefined;
@@ -27,6 +34,7 @@ export default class Sketch {
 
     this.canvas.addEventListener('mousemove', (event) => {
       if(this.pressed) {
+
         const x2 = event.offsetX;
         const y2 = event.offsetY;
 
@@ -37,9 +45,91 @@ export default class Sketch {
     })
   }
 
+  touchRecognitions() {
+    this.canvas.addEventListener('touchstart', this.handleStart, false);
+    this.canvas.addEventListener('touchend', this.handleEnd, false);
+    this.canvas.addEventListener('touchmove', this.handleMove, false);
+    this.canvas.addEventListener('touchcancel', this.handleCancel, false);
+    this.canvas.addEventListener('touchleave', this.handleEnd, false)
+  }
+
+  // Mobile drawing handlers
+
+  handleStart(event) {
+    const touches = event.changedTouches;
+    event.preventDefault();
+
+    for(let i = 0; i < touches.length; i++) {
+      this.ongoingTouches.push(this.copyTouch(touches[i]));
+    }
+  }
+
+  handleMove(event) {
+    event.preventDefault();
+
+    const touches = event.changedTouches;
+
+    for(let i = 0; i < touches.length; i++) {
+      const idx = this.ongoingTouchIndexById(touches[i].identifier);
+      this.x = this.ongoingTouches[idx].pageX;
+      this.y = this.ongoingTouches[idx].pageY;
+
+      const x2 = touches[i].pageX;
+      const y2 = touches[i].pageY;
+      if(idx >= 0) {
+        this.drawLine(this.x, this.y, x2, y2)
+        this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
+      } else {
+        console.error("Can't figure out which touch to continue.")
+      }
+    }
+  }
+
+  handleEnd(event) {
+    event.preventDefault();
+    const touches = event.changedTouches;
+
+    for(let i = 0; i < touches.length; i++) {
+      const idx = this.ongoingTouchIndexById(touches[i].identifier);
+      if(idx >= 0) {
+        this.context.beginPath();
+        this.ongoingTouches.splice(idx, 1);
+      } else {
+        console.error("Can't figure out which touch to end.")
+      }
+    }
+  }
+
+  handleCancel(event) {
+    event.preventDefault();
+
+    const touches = event.changedTouches;
+
+    for(let i = 0; i < touches.length; i++) 
+      this.ongoingTouches.splice(i, 1);
+  }
+
+  copyTouch(touch) {
+    return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY };
+  }
+
+  ongoingTouchIndexById(idToFind) {
+    for (var i=0; i < this.ongoingTouches.length; i++) {
+      var id = this.ongoingTouches[i].identifier;
+  
+      if (id == idToFind) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+
+  // -----------------
+
   setup() {
     this.mouseRecognitions();
-    this.drawTesting();
+    this.touchRecognitions();
   }
 
   drawLine(x1, y1, x2, y2) {
@@ -47,50 +137,6 @@ export default class Sketch {
     this.context.moveTo(x1, y1);
     this.context.lineTo(x2,y2);
     this.context.stroke()
-  }
-
-  drawTesting() {
-    // this.context.fillStyle = "rgb(200,0,0)"
-    // this.context.fillRect (10, 10, 55, 50);
-
-    // this.context.fillStyle = "rgba(0, 0, 200, 0.5)";
-    // this.context.fillRect (30, 30, 55, 50);
-
-    // this.context.fillRect(25, 25, 100, 100)
-    // this.context.clearRect(45, 45, 60, 60)
-    // this.context.strokeRect(50, 50, 50, 50)
-
-
-    this.context.beginPath()
-    this.context.moveTo(200, 300)
-    this.context.lineTo(220, 325)
-    this.context.lineTo(220, 275)
-    this.context.fill()
-
-
-    this.context.beginPath();
-    this.context.arc(75, 75, 50, 0, Math.PI * 2, true); // Círculo exterior
-    this.context.moveTo(110, 75);
-    this.context.arc(75, 75, 35, 0, Math.PI, false);  // Boca (sentido horário)
-    this.context.moveTo(65, 65);
-    this.context.arc(60, 65, 5, 0, Math.PI * 2, true);  // Olho esquerdo
-    this.context.moveTo(95, 65);
-    this.context.arc(90, 65, 5, 0, Math.PI * 2, true);  // Olho direito
-    this.context.stroke();
-
-     // Stroked triangle
-     this.context.beginPath();
-     this.context.moveTo(125,125);
-     this.context.lineTo(125,45);
-     this.context.lineTo(45,125);
-     this.context.closePath();
-     this.context.stroke();
-
-     this.context.beginPath()
-     this.context.moveTo(200,200)
-     this.context.lineTo(200, 300)
-     this.context.lineTo(200, 400)
-     this.context.stroke()
   }
   
 }
