@@ -4,6 +4,7 @@
   box-sizing: border-box;
   text-decoration: none;
   list-style: none;
+  outline: none;
 }
 
 html {
@@ -31,4 +32,22 @@ body {
   left: 0;
 
   box-shadow: 5px 0px 10px 0px rgba(46, 49, 49, 0.6);
+
+  padding: 15px 60px 15px 60px;
+}
+
+.config-container {
+  display: flex;
+  justify-content: flex-start;
+}
+
+#widthValue {
+  background: #e4f1fe;
+  padding: 10px 15px 10px 15px;
+  margin: 10px;
+}
+
+#decrease,
+#increase {
+  padding: 5px 10px 5px 10px;
 }
