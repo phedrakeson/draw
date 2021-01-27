@@ -6,6 +6,8 @@ export default class Sketch {
     
     this.x = undefined;
     this.y = undefined;
+
+    this.ongoingTouches = new Array;
   }
 
   mouseRecognitions() {
@@ -16,7 +18,7 @@ export default class Sketch {
       this.y = event.offsetY;
     })
 
-    this.canvas.addEventListener('mouseup', (event) => {
+    this.canvas.addEventListener('mouseup', () => {
       this.pressed = false;
 
       this.x = undefined;
@@ -25,6 +27,7 @@ export default class Sketch {
 
     this.canvas.addEventListener('mousemove', (event) => {
       if(this.pressed) {
+
         const x2 = event.offsetX;
         const y2 = event.offsetY;
 
@@ -35,8 +38,53 @@ export default class Sketch {
     })
   }
 
+  touchRecognitions() {
+    this.canvas.addEventListener('touchstart', this.handleStart, false);
+    this.canvas.addEventListener('touchend', this.handleEnd, false);
+    this.canvas.addEventListener('touchmove', this.handleMove, false);
+    this.canvas.addEventListener('touchcancel', this.handleCancel, false);
+    this.canvas.addEventListener('touchleave', this.handleLeave, false)
+  }
+
+  // Mobile drawing handlers
+
+  handleStart(event) {
+    const touches = event.changedTouches;
+    event.preventDefault();
+
+    for(let i = 0; i < touches.length; i++) {
+      this.ongoingTouches.push(this.copyTouch(touches[i]));
+      this.context.beginPath();
+      this.context.arc(touches[i].pageX, touches[i].pageY, 4, 0,2*Math.PI, false);
+      this.context.fill()
+    }
+  }
+
+  handleMove(event) {
+    event.preventDefault();
+
+    const touches = event.changedTouches;
+
+    for(let i = 0; i < touches.length; i++) {
+      const idx = this.ongoingTouchIndexById(touches[i].identifier);
+      if(idx >= 0) {
+        this.context.beginPath();
+        this.context.moveTo(this.ongoingTouches[idx].pageX, this.ongoingTouches[idx].pageY);
+        this.context.stroke();
+
+        this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
+      } else {
+        console.error("Can't figure out which touch to continue.")
+      }
+    }
+  }
+
+
+  // -----------------
+
   setup() {
     this.mouseRecognitions();
+    this.touchRecognitions();
   }
 
   drawLine(x1, y1, x2, y2) {
