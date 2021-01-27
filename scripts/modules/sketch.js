@@ -6,7 +6,6 @@ export default class Sketch {
     
     this.x = undefined;
     this.y = undefined;
-
     this.ongoingTouches = new Array;
 
     this.handleStart = this.handleStart.bind(this);
@@ -71,11 +70,11 @@ export default class Sketch {
 
     for(let i = 0; i < touches.length; i++) {
       const idx = this.ongoingTouchIndexById(touches[i].identifier);
-      this.x = this.ongoingTouches[idx].pageX;
-      this.y = this.ongoingTouches[idx].pageY;
+      this.x = this.ongoingTouches[idx].clientX;
+      this.y = this.ongoingTouches[idx].clientY;
 
-      const x2 = touches[i].pageX;
-      const y2 = touches[i].pageY;
+      const x2 = touches[i].clientX;
+      const y2 = touches[i].clientY;
       if(idx >= 0) {
         this.drawLine(this.x, this.y, x2, y2)
         this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
@@ -110,7 +109,7 @@ export default class Sketch {
   }
 
   copyTouch(touch) {
-    return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY };
+    return { identifier: touch.identifier, clientX: touch.clientX, clientY: touch.clientY };
   }
 
   ongoingTouchIndexById(idToFind) {
