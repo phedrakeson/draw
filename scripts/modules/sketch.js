@@ -79,6 +79,24 @@ export default class Sketch {
     }
   }
 
+  handleEnd(event) {
+    event.preventDefault();
+    const touches = event.changedTouches;
+
+    for(let i = 0; i < touches.length; i++) {
+      const idx = this.ongoingTouchIndexById(touches[i].identifier);
+      if(idx >= 0) {
+        this.context.beginPath();
+        this.context.moveTo(this.ongoingTouches[idx].pageX, this.ongoingTouches[idx].pageY);
+        this.context.lineTo(touches[i].pageX, touches[i].pageY);
+        this.context.fillRect(touches[i].pageX-4, touches[i].pageY-4, 8, 8);
+        this.ongoingTouches.splice(idx, 1);
+      } else {
+        console.error("Can't figure out which touch to end.")
+      }
+    }
+  }
+
 
   // -----------------
 
