@@ -14,6 +14,8 @@ export default class Sketch {
     this.handleCancel = this.handleCancel.bind(this);
     this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
     this.copyTouch = this.copyTouch.bind(this);
+    this.adjustLine = this.adjustLine.bind(this);
+
 
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
@@ -39,8 +41,8 @@ export default class Sketch {
 
         const x2 = event.offsetX;
         const y2 = event.offsetY;
-
-        this.drawLine(this.x, this.y, x2, y2)
+        this.drawCircle(x2, y2)
+        this.drawLine(this.x, this.y, x2, y2);
         this.x = x2;
         this.y = y2;
       }
@@ -79,6 +81,7 @@ export default class Sketch {
       const x2 = touches[i].clientX;
       const y2 = touches[i].clientY;
       if(idx >= 0) {
+        this.drawLine(x2,y2)
         this.drawLine(this.x, this.y, x2, y2)
         this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
       } else {
@@ -130,15 +133,72 @@ export default class Sketch {
   // -----------------
 
   setup() {
+    this.configSetup();
     this.mouseRecognitions();
     this.touchRecognitions();
   }
 
+  // configurations
+
+  configSetup() {
+    this.adjustLine();
+    this.adjustColor()
+  }
+
+  adjustLine() {
+    this.decreaseBtn = document.getElementById('decrease');
+    this.increaseBtn = document.getElementById('increase');
+    this.lineWidthElement = document.getElementById('widthValue');
+    this.value = 2
+    this.lineWidthElement.innerText = this.value
+    this.decreaseBtn.addEventListener('click', () => {
+      this.value -= 2;
+      if(this.value <= 0)
+        this.value = 2;
+
+        this.lineWidthElement.innerText = this.value;
+      this.updateWidthValueOnScreen(this.value);
+
+    });
+
+    this.increaseBtn.addEventListener('click', () => {
+      this.value += 2;
+      if(this.value >= 20)
+        this.value = 20;
+      this.lineWidthElement.innerText = this.value;
+      this.updateWidthValueOnScreen(this.value);
+
+    })
+
+  }
+
+  adjustColor() {
+    this.color = document.getElementById('color');
+    this.color.addEventListener('change', (event) => {
+      this.color = event.target.value;
+    })
+  }
+
+  updateWidthValueOnScreen(value) {
+    this.lineWidthElement.innerText = value;
+  }
+
+  // Drawing methods
+
   drawLine(x1, y1, x2, y2) {
+    this.context.lineWidth = this.lineWidthElement.innerText * 2;
     this.context.beginPath();
     this.context.moveTo(x1, y1);
     this.context.lineTo(x2,y2);
+    this.context.strokeStyle = this.color
     this.context.stroke()
+  }
+
+  drawCircle(x, y) {
+    this.context.beginPath()
+    this.context.arc(x, y, this.lineWidthElement.innerText, 0, Math.PI * 2);
+    this.context.fillStyle = this.color;
+    this.context.fill()
   }
   
 }
