@@ -142,6 +142,7 @@ export default class Sketch {
 
   configSetup() {
     this.adjustLine();
+    this.adjustColor()
   }
 
   adjustLine() {
@@ -171,22 +172,32 @@ export default class Sketch {
 
   }
 
+  adjustColor() {
+    this.color = document.getElementById('color');
+    this.color.addEventListener('change', (event) => {
+      this.color = event.target.value;
+    })
+  }
+
   updateWidthValueOnScreen(value) {
     this.lineWidthElement.innerText = value;
   }
+
+  // Drawing methods
 
   drawLine(x1, y1, x2, y2) {
     this.context.lineWidth = this.lineWidthElement.innerText * 2;
     this.context.beginPath();
     this.context.moveTo(x1, y1);
     this.context.lineTo(x2,y2);
+    this.context.strokeStyle = this.color
     this.context.stroke()
   }
 
   drawCircle(x, y) {
     this.context.beginPath()
     this.context.arc(x, y, this.lineWidthElement.innerText, 0, Math.PI * 2);
-    this.context.fillStyle = "#000"
+    this.context.fillStyle = this.color;
     this.context.fill()
   }
   
