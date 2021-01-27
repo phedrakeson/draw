@@ -6,7 +6,7 @@
 ![Bitbucket open issues](https://img.shields.io/bitbucket/issues/phedrakeson/draw?style=for-the-badge)
 ![Bitbucket open pull requests](https://img.shields.io/bitbucket/pr-raw/phedrakeson/draw?style=for-the-badge)
 
-![](https://i.gyazo.com/9bbd7fca3b8a4f96e56b80660142855c.png)
+![](https://i.gyazo.com/17a81def62ce3f4b8ca4ae48cc639606.png)
 
 > Projeto feito utilizando o Canvas nativo, tornando possível desenhar na interface tanto pelo Desktop como pelo Mobile (inclusive com dois dedos!)
 
