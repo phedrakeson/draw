@@ -15,6 +15,8 @@ export default class Sketch {
     this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
     this.copyTouch = this.copyTouch.bind(this);
 
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
   }
 
   mouseRecognitions() {
