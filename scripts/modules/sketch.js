@@ -13,7 +13,8 @@ export default class Sketch {
     this.handleMove = this.handleMove.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
     this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
-    this.copyTouch = this.copyTouch.bind(this)
+    this.copyTouch = this.copyTouch.bind(this);
+
   }
 
   mouseRecognitions() {
