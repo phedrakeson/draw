@@ -142,7 +142,8 @@ export default class Sketch {
 
   configSetup() {
     this.adjustLine();
-    this.adjustColor()
+    this.adjustColor();
+    this.clearBoard();
   }
 
   adjustLine() {
@@ -199,6 +200,13 @@ export default class Sketch {
     this.context.arc(x, y, this.lineWidthElement.innerText, 0, Math.PI * 2);
     this.context.fillStyle = this.color;
     this.context.fill()
+  }
+
+  clearBoard() {
+    const trashBtn = document.getElementById('trash');
+    trashBtn.addEventListener('click', () => {
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    });
   }
   
 }
