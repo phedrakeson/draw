@@ -18,8 +18,8 @@ O projeto ainda está em desenvolvimento e as próximas atualizações serão vo
 - [x] Possibilidade de desenhar no mobile, reconhecendo mais de um toque.
 - [x] Ajuste no suporte mobile
 - [x] Painel de configurações
-- [ ] Possibilidade de limpar o board
-- [ ] Melhorar UI
+- [x] Possibilidade de limpar o board
+- [x] Melhorar UI
 
 ## 📫 Contribuindo para o Draw
 
