@@ -4,16 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="module" src="./scripts/main.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/styles/main.css">
   <title>Draw</title>
 </head>
 <body>
   <canvas id="sketch"></canvas>
   <nav id="configs">
-    <button id="decrease">-</button>
-    <span id="widthValue"></span>
-    <button id="increase">+</button>
+    <div id="width-panel">
+      <a id="decrease"><img src="./assets/icons/minus.svg" alt=""></a>
+      <span id="widthValue"></span>
+      <a id="increase"><img src="./assets/icons/add.svg" alt=""></a>
+    </div>
     <input type="color" id="color">
+    <a id="trash"><img src="./assets/icons/trash.svg" alt=""></a>
   </nav>
+
+  <footer id="footer">
+    <p>Desenvolvido com orgulho por Gabriel Duarte 🤘🏽</p>
+  </footer>
 </body>
 </html>

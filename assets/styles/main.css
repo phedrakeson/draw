@@ -9,6 +9,12 @@
 
 html {
   font-size: 62.5%;
+  font-family: 'Open Sans', sans-serif;
+}
+
+img {
+  max-width: 100%;
+  display: block;
 }
 
 body {
@@ -19,13 +25,13 @@ body {
 }
 
 #sketch {
-  background: #e4f1fe;
+  background: #eee;
 }
 
 #configs {
   width: 100%;
   height: 80px;
-  background: #013243;
+  background: #2e3131;
   overflow: hidden;
   position: absolute;
   top: 0;
@@ -38,25 +44,62 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+
+  gap: 10px;
+}
+
+#width-panel {
+  max-width: 120px;
+  display: flex;
+  padding: 10px;
+
+  border: 1px solid rgba(238, 238, 238, 0.2);
+
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+#increase,
+#decrease {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+#trash {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
 }
 
 #widthValue {
-  background: #e4f1fe;
-  padding: 10px 15px 10px 15px;
-  margin: 10px;
+  color: #eee;
   font-size: 2.4rem;
-  border-radius: 0.5rem;
-  font-family: monospace;
-}
-
-#decrease,
-#increase {
-  padding: 5px 10px 5px 10px;
-  font-size: 2rem;
 }
 
 #color {
   width: 30px;
   height: 30px;
   margin: 20px;
+}
+
+@media (max-width: 375px) {
+  #configs {
+    padding: 15px;
+  }
+}
+
+#footer {
+  width: 100%;
+  padding: 10px;
+  background-color: #2574a9;
+
+  font-size: 1.6rem;
+  color: #eee;
+  text-align: center;
+
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
