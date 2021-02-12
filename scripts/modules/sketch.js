@@ -215,6 +215,7 @@ export default class Sketch {
     const eraserBtn = document.getElementById('eraser');
     eraserBtn.addEventListener('click', (event) => {
       this.color = '#EEE';
+      this.toggleTools();
     })
   }
 
@@ -223,6 +224,14 @@ export default class Sketch {
     pencilBtn.addEventListener('click', (event) => {
       const color = document.getElementById('color');
       this.color = color.value;
+      this.toggleTools();
     })
-  }  
+  }
+  
+  toggleTools() {
+    const eraserBtn = document.getElementById('eraser');
+    const pencilBtn = document.getElementById('pencil');
+    eraserBtn.classList.toggle("selected");
+    pencilBtn.classList.toggle("selected");
+  }
 }
