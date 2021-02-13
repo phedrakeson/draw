@@ -144,6 +144,8 @@ export default class Sketch {
     this.adjustLine();
     this.adjustColor();
     this.clearBoard();
+    this.pencilTool();
+    this.eraserTool();
   }
 
   adjustLine() {
@@ -208,5 +210,28 @@ export default class Sketch {
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     });
   }
+
+  eraserTool() {
+    const eraserBtn = document.getElementById('eraser');
+    eraserBtn.addEventListener('click', (event) => {
+      this.color = '#EEE';
+      this.toggleTools();
+    })
+  }
+
+  pencilTool() {
+    const pencilBtn = document.getElementById('pencil');
+    pencilBtn.addEventListener('click', (event) => {
+      const color = document.getElementById('color');
+      this.color = color.value;
+      this.toggleTools();
+    })
+  }
   
+  toggleTools() {
+    const eraserBtn = document.getElementById('eraser');
+    const pencilBtn = document.getElementById('pencil');
+    eraserBtn.classList.toggle("selected");
+    pencilBtn.classList.toggle("selected");
+  }
 }

@@ -67,11 +67,17 @@ body {
   cursor: pointer;
 }
 
-#trash {
+#trash, #pencil, #eraser {
   width: 30px;
   height: 30px;
   cursor: pointer;
+  background-size: cover;
 }
+
+#eraser {background-image: url('../icons/eraser.svg');}
+#eraser.selected {background-image: url('../icons/eraser-blue.svg');}
+#pencil {background-image: url('../icons/pencil.svg');}
+#pencil.selected {background-image: url('../icons/pencil-blue.svg');}
 
 #widthValue {
   color: #eee;
