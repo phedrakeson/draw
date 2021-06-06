@@ -24,7 +24,7 @@ export default class Sketch {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
 
-    window.onkeydown = e => {
+    window.addEventListener('keydown', e => {
       switch (e.key) {
         case "i":
           document.getElementById('modalInfo').classList.toggle("desappear");
@@ -53,7 +53,7 @@ export default class Sketch {
         default:
           break;
       }
-    }
+    })
   }
 
   undo_handle() {
