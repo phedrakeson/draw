@@ -24,27 +24,32 @@ export default class Sketch {
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', (event) => {
       this.pressed = true;
-
       this.x = event.offsetX;
       this.y = event.offsetY;
     })
 
     this.canvas.addEventListener('mouseup', () => {
       this.pressed = false;
-
       this.x = undefined;
       this.y = undefined;
     })
 
-    this.canvas.addEventListener('mousemove', (event) => {
+    this.canvas.addEventListener('mousemove', event => {
       if(this.pressed) {
-
         const x2 = event.offsetX;
         const y2 = event.offsetY;
-        this.drawCircle(x2, y2)
-        this.drawLine(this.x, this.y, x2, y2);
-        this.x = x2;
-        this.y = y2;
+        if (document.getElementById('eraser').classList.contains("selected")) {
+          const sizeFactor = 4;
+          const size = this.value * sizeFactor;
+          const centralize = pos => pos - size / 2; // Returns center position value based on eraser size
+
+          this.context.clearRect(centralize(x2),  centralize(y2), size, size);
+        } else {
+          this.drawCircle(x2, y2)
+          this.drawLine(this.x, this.y, x2, y2);
+          this.x = x2;
+          this.y = y2;
+        }
       }
     })
   }
@@ -141,11 +146,9 @@ export default class Sketch {
   // configurations
 
   configSetup() {
+    this.adjustColors();
     this.adjustLine();
-    this.adjustColor();
-    this.clearBoard();
-    this.pencilTool();
-    this.eraserTool();
+    this.setUpTools();
   }
 
   adjustLine() {
@@ -154,32 +157,25 @@ export default class Sketch {
     this.lineWidthElement = document.getElementById('widthValue');
     this.value = 2
     this.lineWidthElement.innerText = this.value
+
     this.decreaseBtn.addEventListener('click', () => {
       this.value -= 2;
-      if(this.value <= 0)
-        this.value = 2;
-
-        this.lineWidthElement.innerText = this.value;
+      if(this.value <= 0) this.value = 2;
+      this.lineWidthElement.innerText = this.value;
       this.updateWidthValueOnScreen(this.value);
-
     });
 
     this.increaseBtn.addEventListener('click', () => {
       this.value += 2;
-      if(this.value >= 20)
-        this.value = 20;
+      if(this.value >= 20) this.value = 20;
       this.lineWidthElement.innerText = this.value;
       this.updateWidthValueOnScreen(this.value);
-
     })
-
   }
 
-  adjustColor() {
-    this.color = document.getElementById('color');
-    this.color.addEventListener('change', (event) => {
-      this.color = event.target.value;
-    })
+  adjustColors() {
+    document.getElementById('canvas-color').addEventListener('input', event => this.canvas.style.backgroundColor = event.target.value);
+    document.getElementById('color').addEventListener('change', event => this.color = event.target.value);
   }
 
   updateWidthValueOnScreen(value) {
@@ -203,35 +199,18 @@ export default class Sketch {
     this.context.fillStyle = this.color;
     this.context.fill()
   }
-
-  clearBoard() {
-    const trashBtn = document.getElementById('trash');
-    trashBtn.addEventListener('click', () => {
-      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    });
-  }
-
-  eraserTool() {
-    const eraserBtn = document.getElementById('eraser');
-    eraserBtn.addEventListener('click', (event) => {
-      this.color = '#EEE';
-      this.toggleTools();
-    })
-  }
-
-  pencilTool() {
-    const pencilBtn = document.getElementById('pencil');
-    pencilBtn.addEventListener('click', (event) => {
-      const color = document.getElementById('color');
-      this.color = color.value;
-      this.toggleTools();
-    })
-  }
   
+  setUpTools() {
+    document.getElementById('trash').addEventListener('click', () => this.context.clearRect(0, 0, this.canvas.width, this.canvas.height));
+    document.getElementById('eraser').addEventListener('click', () => this.toggleTools())
+    document.getElementById('pencil').addEventListener('click', () => {
+      this.color = document.getElementById('color').value;
+      this.toggleTools();
+    })
+  }
+
   toggleTools() {
-    const eraserBtn = document.getElementById('eraser');
-    const pencilBtn = document.getElementById('pencil');
-    eraserBtn.classList.toggle("selected");
-    pencilBtn.classList.toggle("selected");
+    document.getElementById('eraser').classList.toggle("selected");
+    document.getElementById('pencil').classList.toggle("selected");
   }
 }
