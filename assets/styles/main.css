@@ -59,7 +59,7 @@ body {
   cursor: pointer;
 }
 
-#trash, #pencil, #eraser {
+#trash, #pencil, #eraser, #undo {
   width: 30px;
   height: 30px;
   cursor: pointer;
@@ -104,4 +104,24 @@ label {
   position: absolute;
   bottom: 0;
   left: 0;
+}
+
+#modalInfo {
+  border-radius: 3rem;
+  position: absolute;
+  z-index: 99;
+  background-color: gray;
+  width: 50vw;
+  text-align: center;
+}
+
+.keymap {margin: 20px 0}
+
+#modalInfo h1 {font-size: 2pc}
+
+#modalInfo.desappear {display: none}
+
+#modalInfo ul li {
+  font-size: 1pc;
+  margin: 10px 0;
 }
