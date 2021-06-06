@@ -24,19 +24,17 @@ export default class Sketch {
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', (event) => {
       this.pressed = true;
-
       this.x = event.offsetX;
       this.y = event.offsetY;
     })
 
     this.canvas.addEventListener('mouseup', () => {
       this.pressed = false;
-
       this.x = undefined;
       this.y = undefined;
     })
 
-    this.canvas.addEventListener('mousemove', (event) => {
+    this.canvas.addEventListener('mousemove', event => {
       if(this.pressed) {
         const x2 = event.offsetX;
         const y2 = event.offsetY;
@@ -148,12 +146,9 @@ export default class Sketch {
   // configurations
 
   configSetup() {
+    this.adjustColors();
     this.adjustLine();
-    this.adjustColor();
-    this.adjustCanvasColor();
-    this.clearBoard();
-    this.pencilTool();
-    this.eraserTool();
+    this.setUpTools();
   }
 
   adjustLine() {
@@ -163,14 +158,14 @@ export default class Sketch {
     this.value = 2
     this.lineWidthElement.innerText = this.value
 
-    this.decreaseBtn.addEventListener('click', _ => {
+    this.decreaseBtn.addEventListener('click', () => {
       this.value -= 2;
       if(this.value <= 0) this.value = 2;
       this.lineWidthElement.innerText = this.value;
       this.updateWidthValueOnScreen(this.value);
     });
 
-    this.increaseBtn.addEventListener('click', _ => {
+    this.increaseBtn.addEventListener('click', () => {
       this.value += 2;
       if(this.value >= 20) this.value = 20;
       this.lineWidthElement.innerText = this.value;
@@ -178,14 +173,9 @@ export default class Sketch {
     })
   }
 
-  adjustColor() {
-    this.color = document.getElementById('color');
-    this.color.addEventListener('change', event => this.color = event.target.value )
-  }
-
-  adjustCanvasColor() {
-    this.color = document.getElementById('canvas-color');
-    this.color.addEventListener('input', event => this.canvas.style.backgroundColor = event.target.value )
+  adjustColors() {
+    document.getElementById('canvas-color').addEventListener('input', event => this.canvas.style.backgroundColor = event.target.value);
+    document.getElementById('color').addEventListener('change', event => this.color = event.target.value);
   }
 
   updateWidthValueOnScreen(value) {
@@ -209,23 +199,16 @@ export default class Sketch {
     this.context.fillStyle = this.color;
     this.context.fill()
   }
-
-  clearBoard() {
-    const trashBtn = document.getElementById('trash');
-    trashBtn.addEventListener('click', _ => this.context.clearRect(0, 0, this.canvas.width, this.canvas.height));
-  }
-
-  eraserTool() {
-    document.getElementById('eraser').addEventListener('click', _ => this.toggleTools())
-  }
-
-  pencilTool() {
-    document.getElementById('pencil').addEventListener('click', _ => {
+  
+  setUpTools() {
+    document.getElementById('trash').addEventListener('click', () => this.context.clearRect(0, 0, this.canvas.width, this.canvas.height));
+    document.getElementById('eraser').addEventListener('click', () => this.toggleTools())
+    document.getElementById('pencil').addEventListener('click', () => {
       this.color = document.getElementById('color').value;
       this.toggleTools();
     })
   }
-  
+
   toggleTools() {
     document.getElementById('eraser').classList.toggle("selected");
     document.getElementById('pencil').classList.toggle("selected");
