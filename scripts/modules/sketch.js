@@ -9,6 +9,8 @@ export default class Sketch {
     this.ongoingTouches = new Array;
     this.states = []
     this.color = "#000000"
+    this.value = 2
+    this.updateWidthValueOnScreen();
     
     this.undo_handle = this.undo_handle.bind(this);
     this.decreaseBtn_handle = this.decreaseBtn_handle.bind(this);
@@ -19,7 +21,6 @@ export default class Sketch {
     this.handleCancel = this.handleCancel.bind(this);
     this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
     this.copyTouch = this.copyTouch.bind(this);
-    this.adjustLine = this.adjustLine.bind(this);
 
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
@@ -55,30 +56,20 @@ export default class Sketch {
       }
     })
   }
-
-  undo_handle() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.states.map((draw, index) => {
-      if (index < this.states.length - 1) {
-        this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
-        this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
-      } else this.states.pop();
-    })
-  }
-
+  
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', event => {
       this.pressed = true;
       this.x = event.offsetX;
       this.y = event.offsetY;
     })
-
+    
     this.canvas.addEventListener('mouseup', () => {
       this.pressed = false;
       this.x = undefined;
       this.y = undefined;
     })
-
+    
     this.canvas.addEventListener('mousemove', event => {
       if(this.pressed) {
         const x2 = event.offsetX;
@@ -98,26 +89,52 @@ export default class Sketch {
       }
     })
   }
-
+  
   touchRecognitions() {
-    this.canvas.addEventListener('touchstart', this.handleStart, false);
-    this.canvas.addEventListener('touchend', this.handleEnd, false);
+    this.canvas.addEventListener('touchstart', this.handleStart, true);
+    this.canvas.addEventListener('touchend', this.handleEnd, true);
     this.canvas.addEventListener('touchmove', this.handleMove, false);
     this.canvas.addEventListener('touchcancel', this.handleCancel, false);
     this.canvas.addEventListener('touchleave', this.handleEnd, false)
   }
+  
+  // Click/Key handlers
+
+  undo_handle() {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.states.map((draw, index) => {
+      if (index < this.states.length - 1) {
+        this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
+        this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+      } else this.states.pop();
+    })
+  }
+
+  decreaseBtn_handle() {
+    this.value -= 2;
+    if(this.value <= 0) this.value = 2;
+    this.updateWidthValueOnScreen();
+  }
+
+  increaseBtn_handle() {
+    this.value += 2;
+    if(this.value >= this.lineWidthLimit) this.value = this.lineWidthLimit;
+    this.updateWidthValueOnScreen();
+  }
+
+  // -----------------
 
   // Mobile drawing handlers
-
+  
   handleStart(event) {
     const touches = event.changedTouches;
     event.preventDefault();
-
+    
     for(let i = 0; i < touches.length; i++) {
       this.ongoingTouches.push(this.copyTouch(touches[i]));
     }
   }
-
+  
   handleMove(event) {
     event.preventDefault();
 
@@ -131,8 +148,7 @@ export default class Sketch {
       const x2 = touches[i].clientX;
       const y2 = touches[i].clientY;
       if(idx >= 0) {
-        this.drawLine(x2,y2)
-        this.drawLine(this.x, this.y, x2, y2)
+        this.drawLine(this.x, this.y, x2, y2, this.value, this.color)
         this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
       } else {
         console.error("Can't figure out which touch to continue.")
@@ -179,52 +195,34 @@ export default class Sketch {
     return -1;
   }
 
-
   // -----------------
 
   setup() {
-    this.configSetup();
+    this.addEventListeners();
     this.mouseRecognitions();
     this.touchRecognitions();
   }
 
   // configurations
 
-  configSetup() {
-    this.adjustColors();
-    this.adjustLine();
-    this.setUpTools();
+  updateWidthValueOnScreen() {
+    document.getElementById('widthValue').innerText = this.value;
   }
 
-  decreaseBtn_handle() {
-    this.value -= 2;
-    if(this.value <= 0) this.value = 2;
-    this.updateWidthValueOnScreen();
-  }
-
-  increaseBtn_handle() {
-    this.value += 2;
-    if(this.value >= this.lineWidthLimit) this.value = this.lineWidthLimit;
-    this.updateWidthValueOnScreen();
-  }
-
-  adjustLine() {
-    this.decreaseBtn = document.getElementById('decrease');
-    this.increaseBtn = document.getElementById('increase');
-    this.lineWidthElement = document.getElementById('widthValue');
-    this.value = 2
-    this.updateWidthValueOnScreen();
-    this.decreaseBtn.addEventListener('click', this.decreaseBtn_handle);
-    this.increaseBtn.addEventListener('click', this.increaseBtn_handle)
-  }
-
-  adjustColors() {
+  addEventListeners() {
     document.getElementById('canvas-color').addEventListener('input', event => this.canvas.style.backgroundColor = event.target.value);
     document.getElementById('color').addEventListener('change', event => this.color = event.target.value);
+    document.getElementById('decrease').addEventListener('click', this.decreaseBtn_handle);
+    document.getElementById('increase').addEventListener('click', this.increaseBtn_handle)
+    document.getElementById('trash').addEventListener('click', () => this.context.clearRect(0, 0, this.canvas.width, this.canvas.height));
+    document.getElementById('undo').addEventListener('click', this.undo_handle)
+    document.getElementById('eraser').addEventListener('click', this.toggleTools)
+    document.getElementById('pencil').addEventListener('click', this.toggleTools)
   }
-
-  updateWidthValueOnScreen() {
-    this.lineWidthElement.innerText = this.value;
+  
+  toggleTools() {
+    document.getElementById('eraser').classList.toggle("selected");
+    document.getElementById('pencil').classList.toggle("selected");
   }
 
   // Drawing methods
@@ -243,17 +241,5 @@ export default class Sketch {
     this.context.arc(x, y, size, 0, Math.PI * 2);
     this.context.fillStyle = color;
     this.context.fill()
-  }
-  
-  setUpTools() {
-    document.getElementById('trash').addEventListener('click', () => this.context.clearRect(0, 0, this.canvas.width, this.canvas.height));
-    document.getElementById('undo').addEventListener('click', () => this.undo_handle())
-    document.getElementById('eraser').addEventListener('click', () => this.toggleTools())
-    document.getElementById('pencil').addEventListener('click', () => this.toggleTools())
-  }
-
-  toggleTools() {
-    document.getElementById('eraser').classList.toggle("selected");
-    document.getElementById('pencil').classList.toggle("selected");
   }
 }
