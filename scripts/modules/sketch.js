@@ -229,11 +229,11 @@ export default class Sketch {
 
   // Drawing methods
 
-  drawLine(x1, y1, x2, y2, size, color) {
+  drawLine(initialX, initialY, x, y, size, color) {
     this.context.lineWidth = size * 2;
     this.context.beginPath();
-    this.context.moveTo(x1, y1);
-    this.context.lineTo(x2,y2);
+    this.context.moveTo(initialX, initialY);
+    this.context.lineTo(x, y);
     this.context.strokeStyle = color
     this.context.stroke()
   }
