@@ -11,7 +11,9 @@ export default class Sketch {
     this.color = "#000000"
     this.value = 2
     this.updateWidthValueOnScreen();
+    this.user_draws = localStorage.getItem("user_draws") != null ? JSON.parse(localStorage.getItem("user_draws")) : []
     
+    this.updateSaves = this.updateSaves.bind(this);
     this.undo_handle = this.undo_handle.bind(this);
     this.decreaseBtn_handle = this.decreaseBtn_handle.bind(this);
     this.increaseBtn_handle = this.increaseBtn_handle.bind(this);
@@ -21,42 +23,29 @@ export default class Sketch {
     this.handleCancel = this.handleCancel.bind(this);
     this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
     this.copyTouch = this.copyTouch.bind(this);
-
+    
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
-
-    window.addEventListener('keydown', e => {
-      switch (e.key) {
-        case "i":
-          document.getElementById('modalInfo').classList.toggle("desappear");
-          break;
-
-        case "e":
-          this.toggleTools();
-          break;
-
-        case "r":
-          this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-          break;
-
-        case "a":
-          this.decreaseBtn_handle();
-          break;
-
-        case "d":
-          this.increaseBtn_handle();
-          break;
-
-        case "z":
-          this.undo_handle();
-          break;
-
-        default:
-          break;
-      }
-    })
+    this.updateSaves();
   }
   
+  updateSaves() {
+    document.getElementById('modalSaves').innerHTML = "";
+    if (this.user_draws.length > 0) document.getElementById('modalSaves').innerHTML += this.user_draws.map(draw => `<h3 class="save">${draw.title}</h3>`);
+
+    for (const save of document.querySelectorAll('.save')) {
+      save.addEventListener('click', e => {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
+        this.states = selectedDraw.draw;
+        selectedDraw.draw.map(draw => {
+          this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
+          this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+        })
+      })
+    }
+  }
+
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', event => {
       this.pressed = true;
@@ -218,6 +207,52 @@ export default class Sketch {
     document.getElementById('undo').addEventListener('click', this.undo_handle)
     document.getElementById('eraser').addEventListener('click', this.toggleTools)
     document.getElementById('pencil').addEventListener('click', this.toggleTools)
+    document.getElementById('formSave').addEventListener('submit', e => {
+      e.preventDefault();
+      this.user_draws.push({draw: [...this.states], title: e.target[0].value})
+      localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
+      document.getElementById('modalSave').classList.toggle("desappear")
+    })
+
+    window.addEventListener('keydown', e => {
+      switch (e.key) {
+        case "1":
+          document.getElementById('modalInfo').classList.toggle("desappear");
+          break;
+
+        case "2":
+          this.toggleTools();
+          break;
+
+        case "3":
+          this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          break;
+
+        case "4":
+          this.decreaseBtn_handle();
+          break;
+
+        case "5":
+          this.increaseBtn_handle();
+          break;
+
+        case "6":
+          this.undo_handle();
+          break;
+
+        case "7":
+          this.updateSaves();
+          document.getElementById('modalSaves').classList.toggle("desappear");
+          break;
+        
+        case "8":
+          document.getElementById('modalSave').classList.toggle("desappear")
+          break;
+        
+        default:
+          break;
+      }
+    })
   }
   
   toggleTools() {

@@ -26,22 +26,31 @@
     <a id="pencil" class="selected"></a>
     <a id="eraser"></a>
   </nav>
-  <div id="modalInfo">
+  <div id="modalInfo" class="modal">
     <h1>Wellcome to Draw !</h1>
     <h2>Web App that provides a tool to design anything, be creative!</h2>
     <div class="keymap">
       <h2>Key map</h2>
       <ul>
-        <li>A: Adds 2 to width</li>
-        <li>D: Removes 2 from width</li>
-        <li>E: Switch tools</li>
-        <li>Z: Undo</li>
-        <li>R: Clear canvas</li>
-        <li>I: Close/Open introduction modal</li>
+        <li>1: Close/Open introduction modal</li>
+        <li>2: Switch tools</li>
+        <li>3: Clear canvas</li>
+        <li>4: Adds 2 to width</li>
+        <li>5: Removes 2 from width</li>
+        <li>6: Undo</li>
+        <li>7: Saved draws</li>
+        <li>8: Save draw</li>
       </ul>
     </div>
   </div>
-  <footer id="footer">
+  <div id="modalSave" class="modal desappear">
+    <form id="formSave">
+      <input type="text">
+      <input type="submit" value="Save">
+    </form>
+  </div>
+  <div id="modalSaves" class="modal desappear"></div>
+  <footer id="footer" class="modal">
     <p>Desenvolvido com orgulho por Gabriel Duarte 🤘🏽</p>
   </footer>
 </body>
