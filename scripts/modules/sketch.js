@@ -13,7 +13,13 @@ export default class Sketch {
     this.updateWidthValueOnScreen();
     this.user_draws = localStorage.getItem("user_draws") != null ? JSON.parse(localStorage.getItem("user_draws")) : []
     
-    this.updateSaves = this.updateSaves.bind(this);
+    this.update_deleteListener = this.update_deleteListener.bind(this);
+    this.update_saveListener = this.update_saveListener.bind(this);
+    this.updateSavesModal = this.updateSavesModal.bind(this);
+
+    this.delete_handle = this.delete_handle.bind(this);
+    this.save_handle = this.save_handle.bind(this);
+    this.formSave_handle = this.formSave_handle.bind(this);
     this.undo_handle = this.undo_handle.bind(this);
     this.decreaseBtn_handle = this.decreaseBtn_handle.bind(this);
     this.increaseBtn_handle = this.increaseBtn_handle.bind(this);
@@ -26,24 +32,24 @@ export default class Sketch {
     
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
-    this.updateSaves();
+    this.updateSavesModal();
   }
-  
-  updateSaves() {
-    document.getElementById('modalSaves').innerHTML = "";
-    if (this.user_draws.length > 0) document.getElementById('modalSaves').innerHTML += this.user_draws.map(draw => `<h3 class="save">${draw.title}</h3>`);
 
-    for (const save of document.querySelectorAll('.save')) {
-      save.addEventListener('click', e => {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
-        this.states = selectedDraw.draw;
-        selectedDraw.draw.map(draw => {
-          this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
-          this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
-        })
-      })
-    }
+  updateSavesModal() {
+    document.getElementById('modalSaves').innerHTML = "";
+    if (this.user_draws.length > 0) this.user_draws.map(draw => document.getElementById('modalSaves').innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
+    this.update_saveListener();
+    this.update_deleteListener();
+  }
+
+  update_saveListener() {
+    for (const save of document.querySelectorAll('.save'))
+      save.addEventListener('click', this.save_handle);
+  }
+
+  update_deleteListener() {
+    for (const deleteBtn of document.querySelectorAll('.delete'))
+      deleteBtn.addEventListener('click', this.delete_handle);
   }
 
   mouseRecognitions() {
@@ -109,6 +115,30 @@ export default class Sketch {
     this.value += 2;
     if(this.value >= this.lineWidthLimit) this.value = this.lineWidthLimit;
     this.updateWidthValueOnScreen();
+  }
+
+  delete_handle(e) {
+    this.user_draws = this.user_draws.filter(save => save.title != e.path[1].getAttribute("key"));
+    localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
+    this.updateSavesModal();
+  }
+
+  save_handle(e) {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
+    this.states = selectedDraw.draw;
+    selectedDraw.draw.map(draw => {
+      this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
+      this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+    })
+  }
+
+  formSave_handle(e) {
+    e.preventDefault();
+    this.user_draws.push({draw: [...this.states], title: e.target[0].value})
+    localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
+    document.getElementById('modalSave').classList.toggle("desappear")
+    this.updateSavesModal();
   }
 
   // -----------------
@@ -207,12 +237,7 @@ export default class Sketch {
     document.getElementById('undo').addEventListener('click', this.undo_handle)
     document.getElementById('eraser').addEventListener('click', this.toggleTools)
     document.getElementById('pencil').addEventListener('click', this.toggleTools)
-    document.getElementById('formSave').addEventListener('submit', e => {
-      e.preventDefault();
-      this.user_draws.push({draw: [...this.states], title: e.target[0].value})
-      localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
-      document.getElementById('modalSave').classList.toggle("desappear")
-    })
+    document.getElementById('formSave').addEventListener('submit', this.formSave_handle)
 
     window.addEventListener('keydown', e => {
       switch (e.key) {
@@ -241,7 +266,7 @@ export default class Sketch {
           break;
 
         case "7":
-          this.updateSaves();
+          this.updateSavesModal();
           document.getElementById('modalSaves').classList.toggle("desappear");
           break;
         
