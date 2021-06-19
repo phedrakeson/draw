@@ -13,16 +13,6 @@ export default class Sketch {
     this.updateWidthValueOnScreen();
     this.user_draws = localStorage.getItem("user_draws") != null ? JSON.parse(localStorage.getItem("user_draws")) : []
     
-    this.update_deleteListener = this.update_deleteListener.bind(this);
-    this.update_saveListener = this.update_saveListener.bind(this);
-    this.updateSavesModal = this.updateSavesModal.bind(this);
-
-    this.delete_handle = this.delete_handle.bind(this);
-    this.save_handle = this.save_handle.bind(this);
-    this.formSave_handle = this.formSave_handle.bind(this);
-    this.undo_handle = this.undo_handle.bind(this);
-    this.decreaseBtn_handle = this.decreaseBtn_handle.bind(this);
-    this.increaseBtn_handle = this.increaseBtn_handle.bind(this);
     this.handleStart = this.handleStart.bind(this);
     this.handleEnd = this.handleEnd.bind(this);
     this.handleMove = this.handleMove.bind(this);
@@ -32,10 +22,11 @@ export default class Sketch {
     
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
-    this.updateSavesModal();
+    this.update_SavesModal();
   }
 
-  updateSavesModal() {
+  //#region Updates functions
+  update_SavesModal() {
     document.getElementById('modalSaves').innerHTML = "";
     if (this.user_draws.length > 0) this.user_draws.map(draw => document.getElementById('modalSaves').innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
     this.update_saveListener();
@@ -44,14 +35,20 @@ export default class Sketch {
 
   update_saveListener() {
     for (const save of document.querySelectorAll('.save'))
-      save.addEventListener('click', this.save_handle);
+      save.addEventListener('click', event => this.save_handle(event));
   }
 
   update_deleteListener() {
     for (const deleteBtn of document.querySelectorAll('.delete'))
-      deleteBtn.addEventListener('click', this.delete_handle);
+      deleteBtn.addEventListener('click', event => this.delete_handle(event));
   }
 
+  updateWidthValueOnScreen() {
+    document.getElementById('widthValue').innerText = this.value;
+  }
+  //#endregion
+
+  //#region Screen recognitions
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', event => {
       this.pressed = true;
@@ -92,9 +89,9 @@ export default class Sketch {
     this.canvas.addEventListener('touchcancel', this.handleCancel, false);
     this.canvas.addEventListener('touchleave', this.handleEnd, false)
   }
+  //#endregion
   
-  // Click/Key handlers
-
+  //#region Click/Key handlers
   undo_handle() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.states.map((draw, index) => {
@@ -120,7 +117,7 @@ export default class Sketch {
   delete_handle(e) {
     this.user_draws = this.user_draws.filter(save => save.title != e.path[1].getAttribute("key"));
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
-    this.updateSavesModal();
+    this.update_SavesModal();
   }
 
   save_handle(e) {
@@ -138,13 +135,16 @@ export default class Sketch {
     this.user_draws.push({draw: [...this.states], title: e.target[0].value})
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
     document.getElementById('modalSave').classList.toggle("desappear")
-    this.updateSavesModal();
+    this.update_SavesModal();
   }
 
-  // -----------------
+  canvasClear_handle() {
+    this.states = [];
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+  //#endregion
 
-  // Mobile drawing handlers
-  
+  // #region Mobile drawing handlers
   handleStart(event) {
     const touches = event.changedTouches;
     event.preventDefault();
@@ -156,16 +156,15 @@ export default class Sketch {
   
   handleMove(event) {
     event.preventDefault();
-
     const touches = event.changedTouches;
 
     for(let i = 0; i < touches.length; i++) {
       const idx = this.ongoingTouchIndexById(touches[i].identifier);
       this.x = this.ongoingTouches[idx].clientX;
       this.y = this.ongoingTouches[idx].clientY;
-
       const x2 = touches[i].clientX;
       const y2 = touches[i].clientY;
+
       if(idx >= 0) {
         this.drawLine(this.x, this.y, x2, y2, this.value, this.color)
         this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
@@ -192,7 +191,6 @@ export default class Sketch {
 
   handleCancel(event) {
     event.preventDefault();
-
     const touches = event.changedTouches;
 
     for(let i = 0; i < touches.length; i++) 
@@ -207,14 +205,11 @@ export default class Sketch {
     for (var i=0; i < this.ongoingTouches.length; i++) {
       var id = this.ongoingTouches[i].identifier;
   
-      if (id == idToFind) {
-        return i;
-      }
+      if (id == idToFind) return i;
     }
     return -1;
   }
-
-  // -----------------
+  //#endregion
 
   setup() {
     this.addEventListeners();
@@ -222,22 +217,16 @@ export default class Sketch {
     this.touchRecognitions();
   }
 
-  // configurations
-
-  updateWidthValueOnScreen() {
-    document.getElementById('widthValue').innerText = this.value;
-  }
-
   addEventListeners() {
     document.getElementById('canvas-color').addEventListener('input', event => this.canvas.style.backgroundColor = event.target.value);
     document.getElementById('color').addEventListener('change', event => this.color = event.target.value);
-    document.getElementById('decrease').addEventListener('click', this.decreaseBtn_handle);
-    document.getElementById('increase').addEventListener('click', this.increaseBtn_handle)
-    document.getElementById('trash').addEventListener('click', () => this.context.clearRect(0, 0, this.canvas.width, this.canvas.height));
-    document.getElementById('undo').addEventListener('click', this.undo_handle)
-    document.getElementById('eraser').addEventListener('click', this.toggleTools)
-    document.getElementById('pencil').addEventListener('click', this.toggleTools)
-    document.getElementById('formSave').addEventListener('submit', this.formSave_handle)
+    document.getElementById('decrease').addEventListener('click', () => this.decreaseBtn_handle());
+    document.getElementById('increase').addEventListener('click', () => this.increaseBtn_handle())
+    document.getElementById('trash').addEventListener('click', () => this.canvasClear_handle());
+    document.getElementById('undo').addEventListener('click', () => this.undo_handle())
+    document.getElementById('eraser').addEventListener('click', () => this.toggleTools())
+    document.getElementById('pencil').addEventListener('click', () => this.toggleTools())
+    document.getElementById('formSave').addEventListener('submit', event => this.formSave_handle(event))
 
     window.addEventListener('keydown', e => {
       switch (e.key) {
@@ -250,7 +239,7 @@ export default class Sketch {
           break;
 
         case "3":
-          this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          this.canvasClear_handle()
           break;
 
         case "4":
@@ -266,7 +255,7 @@ export default class Sketch {
           break;
 
         case "7":
-          this.updateSavesModal();
+          this.update_SavesModal();
           document.getElementById('modalSaves').classList.toggle("desappear");
           break;
         
@@ -285,8 +274,7 @@ export default class Sketch {
     document.getElementById('pencil').classList.toggle("selected");
   }
 
-  // Drawing methods
-
+  //#region Drawing methods
   drawLine(initialX, initialY, x, y, size, color) {
     this.context.lineWidth = size * 2;
     this.context.beginPath();
@@ -302,4 +290,5 @@ export default class Sketch {
     this.context.fillStyle = color;
     this.context.fill()
   }
+  //#endregion
 }

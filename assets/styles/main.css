@@ -102,6 +102,8 @@ label {
   color: #eee;
   bottom: 0;
   left: 0;
+  text-align: center;
+  position: absolute;
 }
 
 #modalInfo {
@@ -110,11 +112,9 @@ label {
   border-radius: 3rem;
 }
 
-.keymap {margin: 20px 0}
+#modalInfo div {margin: 20px 0}
 
 #modalInfo h1 {font-size: 2pc}
-
-.desappear {display: none}
 
 #modalInfo ul li {
   font-size: 1pc;
@@ -126,17 +126,16 @@ label {
   right: 10px;
 }
 
+.desappear {display: none}
+
 .save {
   margin: 5px;
   transition: 300ms;
-}
-
-.save:hover {
   cursor: pointer;
-  transform: scale(1.1);
 }
 
 .modal {
+  animation: appear 400ms forwards;
   border-radius: .3rem;
   text-align: center;
   position: absolute;
@@ -152,19 +151,22 @@ label {
   padding: 1px 4px;
   margin: 5px;
   height: 3vh;
-}
-
-.delete:hover {
-  transform: scale(1.1);
   cursor: pointer;
 }
 
 .save-box {
-  padding: 5px;
+  transition: 300ms;
   border-radius: 1rem;
   align-items: center;
   margin: 10px;
   background-color: rgb(91, 91, 91);
   display: flex;
   justify-content: space-evenly;
+}
+
+.save-box:hover {transform: scale(1.09)}
+
+@keyframes appear {
+  from {transform: scale(0.2)}
+  to {transform: scale(1)}
 }
