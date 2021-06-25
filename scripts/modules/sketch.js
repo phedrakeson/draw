@@ -124,6 +124,8 @@ export default class Sketch {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
     this.states = selectedDraw.draw;
+    this.canvas.style.backgroundColor = selectedDraw.backgroundColor;
+
     selectedDraw.draw.map(draw => {
       this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
       this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
@@ -132,13 +134,19 @@ export default class Sketch {
 
   formSave_handle(e) {
     e.preventDefault();
-    this.user_draws.push({draw: [...this.states], title: e.target[0].value})
+    if (this.user_draws.some(draw => draw.title == e.target[0].value)) {
+      alert(`this title is already being used !`);
+      return;
+    }
+    
+    this.user_draws.push({draw: this.states, backgroundColor: this.canvas.style.backgroundColor, title: e.target[0].value})
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
     document.getElementById('modalSave').classList.toggle("desappear")
     this.update_SavesModal();
   }
 
   canvasClear_handle() {
+    this.canvas.style.backgroundColor = "white"
     this.states = [];
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
@@ -167,6 +175,7 @@ export default class Sketch {
 
       if(idx >= 0) {
         this.drawLine(this.x, this.y, x2, y2, this.value, this.color)
+        this.drawCircle(this.x, this.y, this.value, this.color)
         this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
       } else {
         console.error("Can't figure out which touch to continue.")
@@ -256,7 +265,7 @@ export default class Sketch {
 
         case "7":
           this.update_SavesModal();
-          document.getElementById('modalSaves').classList.toggle("desappear");
+          if (this.user_draws.length > 0) document.getElementById('modalSaves').classList.toggle("desappear");
           break;
         
         case "8":
