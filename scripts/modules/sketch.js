@@ -94,7 +94,7 @@ export default class Sketch {
   //#region Click/Key handlers
   undo_handle() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.states.map((draw, index) => {
+    this.states.forEach((draw, index) => {
       if (index < this.states.length - 1) {
         this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
         this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
