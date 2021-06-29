@@ -18,6 +18,7 @@ img {
 }
 
 body {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -66,20 +67,21 @@ input, button {
   cursor: pointer;
 }
 
-#trash, #pencil, #eraser, #undo {
-  width: 30px;
-  height: 30px;
+.icon {
+  padding: 5px;
+  width: 35px;
+  height: 35px;
   cursor: pointer;
   background-size: cover;
 }
 
-#eraser {background-image: url('../icons/eraser.svg');}
-#eraser.selected {background-image: url('../icons/eraser-blue.svg');}
-#pencil {background-image: url('../icons/pencil.svg');}
-#pencil.selected {background-image: url('../icons/pencil-blue.svg');}
+.selected {
+  background-color: #222222;
+  border-radius: .4rem;
+}
 
 #widthValue {
-  color: #eee;
+  color: #eeee;
   font-size: 2.4rem;
 }
 
@@ -133,7 +135,6 @@ label {
 }
 
 #modalSave {
-  
   padding: 10px;
 }
 
@@ -195,6 +196,16 @@ label {
 }
 
 .save-box:hover, #modalSave input[type="submit"]:hover, #modalSave input[type="text"]:hover {transform: scale(1.05)}
+
+.textModal {
+  background-color: #444444;
+  padding: 10px;
+  border-radius: .4rem;
+}
+
+.textModal input {
+  border-radius: .2rem;
+}
 
 @keyframes appear {
   from {transform: scale(0.2)}

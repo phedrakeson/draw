@@ -10,7 +10,7 @@ export default class Sketch {
     this.states = []
     this.color = "#000000"
     this.value = 2
-    this.updateWidthValueOnScreen();
+    this.UpdateWidthValueOnScreen();
     this.user_draws = localStorage.getItem("user_draws") != null ? JSON.parse(localStorage.getItem("user_draws")) : []
     
     this.handleStart = this.handleStart.bind(this);
@@ -20,31 +20,35 @@ export default class Sketch {
     this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
     this.copyTouch = this.copyTouch.bind(this);
     
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-    this.update_SavesModal();
+    this.UpdateSavesModal();
+    this.UpdateCanvasSize();
   }
 
   //#region Updates functions
-  update_SavesModal() {
+  UpdateSavesModal() {
     document.getElementById('modalSaves').innerHTML = "";
     if (this.user_draws.length > 0) this.user_draws.map(draw => document.getElementById('modalSaves').innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
-    this.update_saveListener();
-    this.update_deleteListener();
+    this.UpdateSaveListener();
+    this.UpdateDeleteListener();
   }
 
-  update_saveListener() {
+  UpdateSaveListener() {
     for (const save of document.querySelectorAll('.save'))
-      save.addEventListener('click', event => this.save_handle(event));
+      save.addEventListener('click', event => this.Save_Handle(event));
   }
 
-  update_deleteListener() {
+  UpdateDeleteListener() {
     for (const deleteBtn of document.querySelectorAll('.delete'))
-      deleteBtn.addEventListener('click', event => this.delete_handle(event));
+      deleteBtn.addEventListener('click', event => this.Delete_Handle(event));
   }
 
-  updateWidthValueOnScreen() {
+  UpdateWidthValueOnScreen() {
     document.getElementById('widthValue').innerText = this.value;
+  }
+
+  UpdateCanvasSize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
   }
   //#endregion
 
@@ -54,6 +58,7 @@ export default class Sketch {
       this.pressed = true;
       this.x = event.offsetX;
       this.y = event.offsetY;
+      if (document.getElementById('text').classList.contains("selected")) this.CreateTextModal();
     })
     
     this.canvas.addEventListener('mouseup', () => {
@@ -63,7 +68,7 @@ export default class Sketch {
     })
     
     this.canvas.addEventListener('mousemove', event => {
-      if(this.pressed) {
+      if(this.pressed && !document.getElementById('text').classList.contains("selected")) {
         const x2 = event.offsetX;
         const y2 = event.offsetY;
         if (document.getElementById('eraser').classList.contains("selected")) {
@@ -92,7 +97,7 @@ export default class Sketch {
   //#endregion
   
   //#region Click/Key handlers
-  undo_handle() {
+  Undo_Handle() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.states.forEach((draw, index) => {
       if (index < this.states.length - 1) {
@@ -102,25 +107,25 @@ export default class Sketch {
     })
   }
 
-  decreaseBtn_handle() {
+  DecreaseBtn_Handle() {
     this.value -= 2;
     if(this.value <= 0) this.value = 2;
-    this.updateWidthValueOnScreen();
+    this.UpdateWidthValueOnScreen();
   }
 
-  increaseBtn_handle() {
+  IncreaseBtn_Handle() {
     this.value += 2;
     if(this.value >= this.lineWidthLimit) this.value = this.lineWidthLimit;
-    this.updateWidthValueOnScreen();
+    this.UpdateWidthValueOnScreen();
   }
 
-  delete_handle(e) {
+  Delete_Handle(e) {
     this.user_draws = this.user_draws.filter(save => save.title != e.path[1].getAttribute("key"));
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
-    this.update_SavesModal();
+    this.UpdateSavesModal();
   }
 
-  save_handle(e) {
+  Save_Handle(e) {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
     this.states = selectedDraw.draw;
@@ -132,7 +137,7 @@ export default class Sketch {
     })
   }
 
-  formSave_handle(e) {
+  FormSave_Handle(e) {
     e.preventDefault();
     if (this.user_draws.some(draw => draw.title == e.target[0].value)) {
       alert(`this title is already being used !`);
@@ -142,14 +147,24 @@ export default class Sketch {
     this.user_draws.push({draw: this.states, backgroundColor: this.canvas.style.backgroundColor, title: e.target[0].value})
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
     document.getElementById('modalSave').classList.toggle("desappear")
-    this.update_SavesModal();
+    this.UpdateSavesModal();
   }
 
-  canvasClear_handle() {
-    this.canvas.style.backgroundColor = "white"
+  CanvasClear_Handle() {
+    this.canvas.style.backgroundColor = "#EEEE";
     this.states = [];
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
+
+  FormText_Handle(e) {
+    e.preventDefault();
+    this.context.beginPath();
+    this.context.fillStyle = this.color;
+    this.context.font = `${this.value * 2}px serif`;
+    this.context.fillText(e.target[0].value, this.x, this.y);
+    document.querySelectorAll("form.textModal").forEach(form => form.remove());
+  }
+
   //#endregion
 
   // #region Mobile drawing handlers
@@ -177,9 +192,7 @@ export default class Sketch {
         this.drawLine(this.x, this.y, x2, y2, this.value, this.color)
         this.drawCircle(this.x, this.y, this.value, this.color)
         this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
-      } else {
-        console.error("Can't figure out which touch to continue.")
-      }
+      } else console.error("Can't figure out which touch to continue.");
     }
   }
 
@@ -229,46 +242,46 @@ export default class Sketch {
   addEventListeners() {
     document.getElementById('canvas-color').addEventListener('input', event => this.canvas.style.backgroundColor = event.target.value);
     document.getElementById('color').addEventListener('change', event => this.color = event.target.value);
-    document.getElementById('decrease').addEventListener('click', () => this.decreaseBtn_handle());
-    document.getElementById('increase').addEventListener('click', () => this.increaseBtn_handle())
-    document.getElementById('trash').addEventListener('click', () => this.canvasClear_handle());
-    document.getElementById('undo').addEventListener('click', () => this.undo_handle())
-    document.getElementById('eraser').addEventListener('click', () => this.toggleTools())
-    document.getElementById('pencil').addEventListener('click', () => this.toggleTools())
-    document.getElementById('formSave').addEventListener('submit', event => this.formSave_handle(event))
+    document.getElementById('decrease').addEventListener('click', () => this.DecreaseBtn_Handle());
+    document.getElementById('increase').addEventListener('click', () => this.IncreaseBtn_Handle());
+    document.getElementById('trash').addEventListener('click', () => this.CanvasClear_Handle());
+    document.getElementById('undo').addEventListener('click', () => this.Undo_Handle());
+    document.getElementById('eraser').addEventListener('click', event => this.toggleTools(event));
+    document.getElementById('pencil').addEventListener('click', event => this.toggleTools(event));
+    document.getElementById('text').addEventListener('click', event => this.toggleTools(event));
+    document.getElementById('formSave').addEventListener('submit', event => this.FormSave_Handle(event));
+    window.addEventListener('resize', () => this.UpdateCanvasSize());
 
     window.addEventListener('keydown', e => {
-      switch (e.key) {
-        case "1":
+      switch (e.code) {
+        case "Numpad1":
           document.getElementById('modalInfo').classList.toggle("desappear");
           break;
 
-        case "2":
-          this.toggleTools();
+        case "Numpad2":
+          this.CanvasClear_Handle()
           break;
 
-        case "3":
-          this.canvasClear_handle()
+        case "Numpad3":
+          this.DecreaseBtn_Handle();
           break;
 
-        case "4":
-          this.decreaseBtn_handle();
+        case "Numpad4":
+          this.IncreaseBtn_Handle();
           break;
 
-        case "5":
-          this.increaseBtn_handle();
+        case "Numpad5":
+          this.Undo_Handle();
           break;
 
-        case "6":
-          this.undo_handle();
+        case "Numpad6":
+          if (this.user_draws.length > 0) {
+            this.UpdateSavesModal();
+            document.getElementById('modalSaves').classList.toggle("desappear");
+          }
           break;
 
-        case "7":
-          this.update_SavesModal();
-          if (this.user_draws.length > 0) document.getElementById('modalSaves').classList.toggle("desappear");
-          break;
-        
-        case "8":
+        case "Numpad7":
           document.getElementById('modalSave').classList.toggle("desappear")
           break;
         
@@ -278,9 +291,36 @@ export default class Sketch {
     })
   }
   
-  toggleTools() {
-    document.getElementById('eraser').classList.toggle("selected");
-    document.getElementById('pencil').classList.toggle("selected");
+  toggleTools(e) {
+    const pencil = document.getElementById('pencil');
+    const eraser = document.getElementById('eraser');
+    const text = document.getElementById('text');
+    text.classList.remove("selected");
+    pencil.classList.remove("selected");
+    eraser.classList.remove("selected");
+    switch (e.target.id) {
+      case "text":
+        text.classList.add("selected");
+        break;
+
+      case "pencil":
+        pencil.classList.add("selected");
+        break;
+        
+      case "eraser":
+        eraser.classList.add("selected");
+        break;
+    }
+  }
+
+  CreateTextModal() {
+    this.pressed = false;
+    const txtModal = document.createElement('form')
+    txtModal.innerHTML = `<input placeholder="Insert the text here" />`;
+    txtModal.setAttribute('class', "textModal");
+    document.body.appendChild(txtModal);
+    txtModal.addEventListener('submit', event => this.FormText_Handle(event));
+    txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${this.y - txtModal.clientHeight / 2}px; left: ${this.x}px`);
   }
 
   //#region Drawing methods
