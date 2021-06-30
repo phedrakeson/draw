@@ -10,36 +10,36 @@ export default class Sketch {
     this.states = []
     this.color = "#000000"
     this.value = 2
-    this.UpdateWidthValueOnScreen();
     this.user_draws = localStorage.getItem("user_draws") != null ? JSON.parse(localStorage.getItem("user_draws")) : []
-    
     this.handleStart = this.handleStart.bind(this);
     this.handleEnd = this.handleEnd.bind(this);
     this.handleMove = this.handleMove.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
     this.ongoingTouchIndexById = this.ongoingTouchIndexById.bind(this);
     this.copyTouch = this.copyTouch.bind(this);
-    
+    this.UpdateWidthValueOnScreen();
     this.UpdateSavesModal();
     this.UpdateCanvasSize();
   }
 
   //#region Updates functions
   UpdateSavesModal() {
-    document.getElementById('modalSaves').innerHTML = "";
-    if (this.user_draws.length > 0) this.user_draws.map(draw => document.getElementById('modalSaves').innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
+    const modalSaves = document.getElementById('modalSaves');
+    modalSaves.innerHTML = "";
+    if (this.user_draws.length > 0) 
+      this.user_draws.map(draw => modalSaves.innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
+    else
+      modalSaves.innerHTML = `<h2 style="margin: 10px;">You have no saves !</h2>`;
     this.UpdateSaveListener();
     this.UpdateDeleteListener();
   }
 
   UpdateSaveListener() {
-    for (const save of document.querySelectorAll('.save'))
-      save.addEventListener('click', event => this.Save_Handle(event));
+    document.querySelectorAll('.save').forEach(save => save.addEventListener('click', event => this.Save_Handle(event)));
   }
 
   UpdateDeleteListener() {
-    for (const deleteBtn of document.querySelectorAll('.delete'))
-      deleteBtn.addEventListener('click', event => this.Delete_Handle(event));
+    document.querySelectorAll('.delete').forEach(deleteBtn => deleteBtn.addEventListener('click', event => this.Delete_Handle(event)));
   }
 
   UpdateWidthValueOnScreen() {
@@ -58,15 +58,13 @@ export default class Sketch {
       this.pressed = true;
       this.x = event.offsetX;
       this.y = event.offsetY;
-      if (document.getElementById('text').classList.contains("selected")) this.CreateTextModal();
+      if (document.getElementById('text').classList.contains("selected")) this.CreateTextModal(event.offsetX, event.offsetY);
     })
-    
     this.canvas.addEventListener('mouseup', () => {
       this.pressed = false;
       this.x = undefined;
       this.y = undefined;
     })
-    
     this.canvas.addEventListener('mousemove', event => {
       if(this.pressed && !document.getElementById('text').classList.contains("selected")) {
         const x2 = event.offsetX;
@@ -77,9 +75,9 @@ export default class Sketch {
           const centralize = pos => pos - size / 2; // Returns center position value based on eraser size
           this.context.clearRect(centralize(x2),  centralize(y2), size, size);
         } else {
-          this.drawCircle(x2, y2, this.value, this.color)
-          this.drawLine(this.x, this.y, x2, y2, this.value, this.color);
-          this.states.push({x: x2, y: y2, prevX: this.x, prevY: this.y, size: this.value, colorStyle: this.color});
+          this.DrawCircle(x2, y2, this.value, this.color)
+          this.DrawLine(this.x, this.y, x2, y2, this.value, this.color);
+          this.states.push({type: "Draw", x: x2, y: y2, prevX: this.x, prevY: this.y, size: this.value, colorStyle: this.color});
           this.x = x2;
           this.y = y2;
         }
@@ -101,8 +99,10 @@ export default class Sketch {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.states.forEach((draw, index) => {
       if (index < this.states.length - 1) {
-        this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
-        this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+        if (draw.type == "Draw") { 
+          this.DrawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
+          this.DrawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+        } else this.DrawText(draw.text, draw.x, draw.y, draw.colorStyle, draw.size);
       } else this.states.pop();
     })
   }
@@ -130,10 +130,11 @@ export default class Sketch {
     const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
     this.states = selectedDraw.draw;
     this.canvas.style.backgroundColor = selectedDraw.backgroundColor;
-
     selectedDraw.draw.map(draw => {
-      this.drawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
-      this.drawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+      if (draw.type == "Draw") {
+        this.DrawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
+        this.DrawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+      } else this.DrawText(draw.text, draw.x, draw.y, draw.colorStyle, draw.size);
     })
   }
 
@@ -156,12 +157,10 @@ export default class Sketch {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  FormText_Handle(e) {
+  FormText_Handle(e, x, y) {
     e.preventDefault();
-    this.context.beginPath();
-    this.context.fillStyle = this.color;
-    this.context.font = `${this.value * 2}px serif`;
-    this.context.fillText(e.target[0].value, this.x, this.y);
+    this.DrawText(e.target[0].value, x, y, this.color, this.value);
+    this.states.push({type: "Text", text: e.target[0].value, x, y, size: this.value, colorStyle: this.color});
     document.querySelectorAll("form.textModal").forEach(form => form.remove());
   }
 
@@ -189,8 +188,8 @@ export default class Sketch {
       const y2 = touches[i].clientY;
 
       if(idx >= 0) {
-        this.drawLine(this.x, this.y, x2, y2, this.value, this.color)
-        this.drawCircle(this.x, this.y, this.value, this.color)
+        this.DrawLine(this.x, this.y, x2, y2, this.value, this.color)
+        this.DrawCircle(this.x, this.y, this.value, this.color)
         this.ongoingTouches.splice(idx, 1, this.copyTouch(touches[i]));
       } else console.error("Can't figure out which touch to continue.");
     }
@@ -275,10 +274,8 @@ export default class Sketch {
           break;
 
         case "Numpad6":
-          if (this.user_draws.length > 0) {
-            this.UpdateSavesModal();
-            document.getElementById('modalSaves').classList.toggle("desappear");
-          }
+          this.UpdateSavesModal();
+          document.getElementById('modalSaves').classList.toggle("desappear");
           break;
 
         case "Numpad7":
@@ -313,18 +310,18 @@ export default class Sketch {
     }
   }
 
-  CreateTextModal() {
+  CreateTextModal(x, y) {
     this.pressed = false;
     const txtModal = document.createElement('form')
-    txtModal.innerHTML = `<input placeholder="Insert the text here" />`;
+    txtModal.innerHTML = `<input type="text" placeholder="Insert the text here"/>`;
     txtModal.setAttribute('class', "textModal");
     document.body.appendChild(txtModal);
-    txtModal.addEventListener('submit', event => this.FormText_Handle(event));
-    txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${this.y - txtModal.clientHeight / 2}px; left: ${this.x}px`);
+    txtModal.addEventListener('submit', event => this.FormText_Handle(event, x, y));
+    txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${y - txtModal.clientHeight / 2}px; left: ${x}px`);
   }
 
   //#region Drawing methods
-  drawLine(initialX, initialY, x, y, size, color) {
+  DrawLine(initialX, initialY, x, y, size, color) {
     this.context.lineWidth = size * 2;
     this.context.beginPath();
     this.context.moveTo(initialX, initialY);
@@ -333,11 +330,18 @@ export default class Sketch {
     this.context.stroke()
   }
 
-  drawCircle(x, y, size, color) {
+  DrawCircle(x, y, size, color) {
     this.context.beginPath()
     this.context.arc(x, y, size, 0, Math.PI * 2);
     this.context.fillStyle = color;
     this.context.fill()
+  }
+
+  DrawText(text, x, y, color, size, font = "serif") {
+    this.context.beginPath();
+    this.context.font = `${size * 2}px ${font}`;
+    this.context.fillStyle = color;
+    this.context.fillText(text, x, y);
   }
   //#endregion
 }
