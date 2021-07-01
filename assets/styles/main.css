@@ -1,3 +1,6 @@
+@import url('./modals.css');
+@import url('./animations.css');
+
 * {
   padding: 0;
   margin: 0;
@@ -9,7 +12,7 @@
 
 html {
   font-size: 62.5%;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Nunito', sans-serif;
 }
 
 img {
@@ -18,10 +21,18 @@ img {
 }
 
 body {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+input, button {
+  border: none;
+  cursor: pointer;
+  transition: 300ms;
+  outline: none;
 }
 
 #sketch {background: #eee}
@@ -52,27 +63,28 @@ body {
   align-items: center;
 }
 
-#increase,
-#decrease {
+#increase, #decrease {
   width: 24px;
   height: 24px;
   cursor: pointer;
 }
 
-#trash, #pencil, #eraser {
-  width: 30px;
-  height: 30px;
+.icon {
+  padding: 5px;
+  width: 35px;
+  height: 35px;
   cursor: pointer;
   background-size: cover;
 }
 
-#eraser {background-image: url('../icons/eraser.svg');}
-#eraser.selected {background-image: url('../icons/eraser-blue.svg');}
-#pencil {background-image: url('../icons/pencil.svg');}
-#pencil.selected {background-image: url('../icons/pencil-blue.svg');}
+.selected {
+  animation: jump 250ms forwards;
+  background-color: #222222;
+  border-radius: .4rem;
+}
 
 #widthValue {
-  color: #eee;
+  color: #eeee;
   font-size: 2.4rem;
 }
 
@@ -100,8 +112,10 @@ label {
   background-color: #2574a9;
   font-size: 1.6rem;
   color: #eee;
-  text-align: center;
-  position: absolute;
   bottom: 0;
   left: 0;
+  text-align: center;
+  position: absolute;
 }
+
+#undo.icon:hover {animation: rotate 500ms;}

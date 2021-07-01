@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="module" src="./scripts/main.js"></script>
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300&display=swap" rel="stylesheet"> 
+  <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/styles/main.css">
   <title>Draw</title>
 </head>
@@ -21,13 +21,38 @@
     <input type="color" id="color">
     <label for="canvas-color">Canvas color:</label>
     <input type="color" id="canvas-color">
-    <a id="trash"><img src="./assets/icons/trash.svg" alt=""></a>
-    <a id="pencil" class="selected"></a>
-    <a id="eraser"></a>
+    <img id="trash" class="icon" src="./assets/icons/trash.svg" alt="">
+    <img id="undo" class="icon" src="./assets/icons/undo.svg" alt="">
+    <img class="icon" id="text" src="./assets/icons/T.svg" alt="">
+    <img class="icon" id="eraser" src="./assets/icons/eraser.svg" alt="">
+    <img class="icon selected" id="pencil" src="./assets/icons/pencil.svg" alt="">
   </nav>
-
+  <div id="modalInfo" class="modal">
+    <h1>Wellcome to Draw !</h1>
+    <h2>Web App that provides a tool to design anything, be creative!</h2>
+    <div>
+      <h2>Key map</h2>
+      <ul>
+        <li>1: Close/Open introduction modal</li>
+        <li>2: Clear canvas</li>
+        <li>3: Adds 2 to width</li>
+        <li>4: Removes 2 from width</li>
+        <li>5: Undo</li>
+        <li>6: Saved draws</li>
+        <li>7: Save draw</li>
+      </ul>
+    </div>
+  </div>
+  <div id="modalSave" class="modal desappear">
+    <form id="formSave">
+      <h2>Before save your draw, give it a title</h2>
+      <input type="text" required>
+      <input type="submit" value="Save">
+    </form>
+  </div>
+  <div id="modalSaves" class="modal desappear"></div>
   <footer id="footer">
-    <p>Desenvolvido com orgulho por Gabriel Duarte 🤘🏽</p>
+    <p>Desenvolvido com orgulho por  Grabriel Duarte 🤘🏽</p>
   </footer>
 </body>
 </html>
