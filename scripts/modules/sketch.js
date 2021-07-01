@@ -1,11 +1,12 @@
-export default class Sketch {
+import Drawing from "./drawing.js";
+
+export default class Sketch extends Drawing {
   constructor(canvas) {
-    this.canvas = document.getElementById(canvas)
-    this.context = this.canvas.getContext('2d')
+    super(canvas);
     this.pressed = false;
     this.x = undefined;
     this.y = undefined;
-    this.lineWidthLimit = 26;
+    this.lineWidthLimit = 76;
     this.ongoingTouches = new Array;
     this.states = []
     this.color = "#000000"
@@ -28,59 +29,52 @@ export default class Sketch {
     modalSaves.innerHTML = "";
     if (this.user_draws.length > 0) 
       this.user_draws.map(draw => modalSaves.innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
-    else
-      modalSaves.innerHTML = `<h2 style="margin: 10px;">You have no saves !</h2>`;
-    this.UpdateSaveListener();
-    this.UpdateDeleteListener();
-  }
-
-  UpdateSaveListener() {
+    else modalSaves.innerHTML = `<h2 style="margin: 10px;">You have no saves !</h2>`;
     document.querySelectorAll('.save').forEach(save => save.addEventListener('click', event => this.Save_Handle(event)));
-  }
-
-  UpdateDeleteListener() {
     document.querySelectorAll('.delete').forEach(deleteBtn => deleteBtn.addEventListener('click', event => this.Delete_Handle(event)));
   }
 
   UpdateWidthValueOnScreen() {
     document.getElementById('widthValue').innerText = this.value;
   }
-
-  UpdateCanvasSize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-  }
   //#endregion
 
   //#region Screen recognitions
   mouseRecognitions() {
     this.canvas.addEventListener('mousedown', event => {
-      this.pressed = true;
-      this.x = event.offsetX;
-      this.y = event.offsetY;
       if (document.getElementById('text').classList.contains("selected")) this.CreateTextModal(event.offsetX, event.offsetY);
+      else if (document.querySelector(".polygon.selected")) {
+        const id = document.querySelector(".polygon.selected").id;
+        this.states.push({type: "polygon", id, x: event.offsetX, y: event.offsetY, size: this.value, colorStyle: this.color});
+        this.DrawPolygon(id, event.offsetX, event.offsetY, this.color, this.value);
+      }
+      else {
+        this.pressed = true;
+        this.x = event.offsetX;
+        this.y = event.offsetY;
+      }
     })
+
     this.canvas.addEventListener('mouseup', () => {
       this.pressed = false;
       this.x = undefined;
       this.y = undefined;
     })
+
     this.canvas.addEventListener('mousemove', event => {
-      if(this.pressed && !document.getElementById('text').classList.contains("selected")) {
+      if(this.pressed) {
         const x2 = event.offsetX;
         const y2 = event.offsetY;
         if (document.getElementById('eraser').classList.contains("selected")) {
-          const sizeFactor = 4;
-          const size = this.value * sizeFactor;
-          const centralize = pos => pos - size / 2; // Returns center position value based on eraser size
-          this.context.clearRect(centralize(x2),  centralize(y2), size, size);
+          const size = this.value * 4;
+          this.context.clearRect(x2 - size / 2, y2 - size / 2, size, size);
         } else {
           this.DrawCircle(x2, y2, this.value, this.color)
           this.DrawLine(this.x, this.y, x2, y2, this.value, this.color);
           this.states.push({type: "Draw", x: x2, y: y2, prevX: this.x, prevY: this.y, size: this.value, colorStyle: this.color});
           this.x = x2;
           this.y = y2;
-        }
+        }    
       }
     })
   }
@@ -98,12 +92,8 @@ export default class Sketch {
   Undo_Handle() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.states.forEach((draw, index) => {
-      if (index < this.states.length - 1) {
-        if (draw.type == "Draw") { 
-          this.DrawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
-          this.DrawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
-        } else this.DrawText(draw.text, draw.x, draw.y, draw.colorStyle, draw.size);
-      } else this.states.pop();
+      if (index < this.states.length - 1) this.ReDraw(draw);
+      else this.states.pop();
     })
   }
 
@@ -130,12 +120,7 @@ export default class Sketch {
     const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
     this.states = selectedDraw.draw;
     this.canvas.style.backgroundColor = selectedDraw.backgroundColor;
-    selectedDraw.draw.map(draw => {
-      if (draw.type == "Draw") {
-        this.DrawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
-        this.DrawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
-      } else this.DrawText(draw.text, draw.x, draw.y, draw.colorStyle, draw.size);
-    })
+    selectedDraw.draw.map(draw => this.ReDraw(draw));
   }
 
   FormSave_Handle(e) {
@@ -144,7 +129,6 @@ export default class Sketch {
       alert(`this title is already being used !`);
       return;
     }
-    
     this.user_draws.push({draw: this.states, backgroundColor: this.canvas.style.backgroundColor, title: e.target[0].value})
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
     document.getElementById('modalSave').classList.toggle("desappear")
@@ -160,10 +144,9 @@ export default class Sketch {
   FormText_Handle(e, x, y) {
     e.preventDefault();
     this.DrawText(e.target[0].value, x, y, this.color, this.value);
-    this.states.push({type: "Text", text: e.target[0].value, x, y, size: this.value, colorStyle: this.color});
+    this.states.push({type: "text", text: e.target[0].value, x, y, size: this.value, colorStyle: this.color});
     document.querySelectorAll("form.textModal").forEach(form => form.remove());
   }
-
   //#endregion
 
   // #region Mobile drawing handlers
@@ -245,12 +228,9 @@ export default class Sketch {
     document.getElementById('increase').addEventListener('click', () => this.IncreaseBtn_Handle());
     document.getElementById('trash').addEventListener('click', () => this.CanvasClear_Handle());
     document.getElementById('undo').addEventListener('click', () => this.Undo_Handle());
-    document.getElementById('eraser').addEventListener('click', event => this.toggleTools(event));
-    document.getElementById('pencil').addEventListener('click', event => this.toggleTools(event));
-    document.getElementById('text').addEventListener('click', event => this.toggleTools(event));
     document.getElementById('formSave').addEventListener('submit', event => this.FormSave_Handle(event));
     window.addEventListener('resize', () => this.UpdateCanvasSize());
-
+    document.querySelectorAll('.icon.selectable').forEach(icon => icon.addEventListener('click', event => this.toggleTools(event)));
     window.addEventListener('keydown', e => {
       switch (e.code) {
         case "Numpad1":
@@ -289,25 +269,10 @@ export default class Sketch {
   }
   
   toggleTools(e) {
-    const pencil = document.getElementById('pencil');
-    const eraser = document.getElementById('eraser');
-    const text = document.getElementById('text');
-    text.classList.remove("selected");
-    pencil.classList.remove("selected");
-    eraser.classList.remove("selected");
-    switch (e.target.id) {
-      case "text":
-        text.classList.add("selected");
-        break;
-
-      case "pencil":
-        pencil.classList.add("selected");
-        break;
-        
-      case "eraser":
-        eraser.classList.add("selected");
-        break;
-    }
+    document.querySelectorAll(".selected").forEach(element => element.classList.remove("selected"))
+    document.querySelectorAll('.icon').forEach(icon => {
+      if (icon.id == e.target.id) icon.classList.add("selected");
+    })
   }
 
   CreateTextModal(x, y) {
@@ -319,29 +284,4 @@ export default class Sketch {
     txtModal.addEventListener('submit', event => this.FormText_Handle(event, x, y));
     txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${y - txtModal.clientHeight / 2}px; left: ${x}px`);
   }
-
-  //#region Drawing methods
-  DrawLine(initialX, initialY, x, y, size, color) {
-    this.context.lineWidth = size * 2;
-    this.context.beginPath();
-    this.context.moveTo(initialX, initialY);
-    this.context.lineTo(x, y);
-    this.context.strokeStyle = color
-    this.context.stroke()
-  }
-
-  DrawCircle(x, y, size, color) {
-    this.context.beginPath()
-    this.context.arc(x, y, size, 0, Math.PI * 2);
-    this.context.fillStyle = color;
-    this.context.fill()
-  }
-
-  DrawText(text, x, y, color, size, font = "serif") {
-    this.context.beginPath();
-    this.context.font = `${size * 2}px ${font}`;
-    this.context.fillStyle = color;
-    this.context.fillText(text, x, y);
-  }
-  //#endregion
 }
