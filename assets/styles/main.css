@@ -62,16 +62,16 @@ input, button {
   justify-content: center;
 }
 
-#polygons {
+.other-tools {
   border-radius: .4rem;
   margin-left: 20px;
   background-color: #272727;
   padding: 5px;
 }
 
-#polygons img {margin: 5px}
+.other-tools img {margin: 5px}
 
-#configs, #width-panel, #polygons {
+#configs, #width-panel, .other-tools {
   display: flex;
   align-items: center;
 }

@@ -29,9 +29,10 @@ export default class Sketch extends Drawing {
     modalSaves.innerHTML = "";
     if (this.user_draws.length > 0) 
       this.user_draws.map(draw => modalSaves.innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
-    else modalSaves.innerHTML = `<h2 style="margin: 10px;">You have no saves !</h2>`;
+    else 
+      modalSaves.innerHTML = `<h2 style="margin: 10px;">You have no saves !</h2>`;
     document.querySelectorAll('.save').forEach(save => save.addEventListener('click', event => this.Save_Handle(event)));
-    document.querySelectorAll('.delete').forEach(deleteBtn => deleteBtn.addEventListener('click', event => this.Delete_Handle(event)));
+    document.querySelectorAll('.delete').forEach(deleteBtn => deleteBtn.addEventListener('click', event => this.DeleteSave_Handle(event)));
   }
 
   UpdateWidthValueOnScreen() {
@@ -109,7 +110,7 @@ export default class Sketch extends Drawing {
     this.UpdateWidthValueOnScreen();
   }
 
-  Delete_Handle(e) {
+  DeleteSave_Handle(e) {
     this.user_draws = this.user_draws.filter(save => save.title != e.path[1].getAttribute("key"));
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
     this.UpdateSavesModal();
@@ -129,8 +130,10 @@ export default class Sketch extends Drawing {
       alert(`this title is already being used !`);
       return;
     }
+
     this.user_draws.push({draw: this.states, backgroundColor: this.canvas.style.backgroundColor, title: e.target[0].value})
     localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
+    e.target.reset();
     document.getElementById('modalSave').classList.toggle("desappear")
     this.UpdateSavesModal();
   }
@@ -145,7 +148,7 @@ export default class Sketch extends Drawing {
     e.preventDefault();
     this.DrawText(e.target[0].value, x, y, this.color, this.value);
     this.states.push({type: "text", text: e.target[0].value, x, y, size: this.value, colorStyle: this.color});
-    document.querySelectorAll("form.textModal").forEach(form => form.remove());
+    e.target.remove();
   }
   //#endregion
 
@@ -229,6 +232,9 @@ export default class Sketch extends Drawing {
     document.getElementById('trash').addEventListener('click', () => this.CanvasClear_Handle());
     document.getElementById('undo').addEventListener('click', () => this.Undo_Handle());
     document.getElementById('formSave').addEventListener('submit', event => this.FormSave_Handle(event));
+    document.getElementById("save").addEventListener('click', () => document.getElementById('modalSave').classList.toggle("desappear"));
+    document.getElementById("load").addEventListener('click', () => document.getElementById('modalSaves').classList.toggle("desappear"));
+    document.getElementById("info").addEventListener('click', () => document.getElementById('modalInfo').classList.toggle("desappear"));
     window.addEventListener('resize', () => this.UpdateCanvasSize());
     document.querySelectorAll('.icon.selectable').forEach(icon => icon.addEventListener('click', event => this.toggleTools(event)));
     window.addEventListener('keydown', e => {
@@ -269,7 +275,7 @@ export default class Sketch extends Drawing {
   }
   
   toggleTools(e) {
-    document.querySelectorAll(".selected").forEach(element => element.classList.remove("selected"))
+    document.querySelector(".icon.selected").classList.remove("selected");
     document.querySelectorAll('.icon').forEach(icon => {
       if (icon.id == e.target.id) icon.classList.add("selected");
     })
@@ -278,9 +284,10 @@ export default class Sketch extends Drawing {
   CreateTextModal(x, y) {
     this.pressed = false;
     const txtModal = document.createElement('form')
-    txtModal.innerHTML = `<input type="text" placeholder="Insert the text here"/>`;
+    txtModal.innerHTML = `<input type="text" placeholder="Insert the text here"/><input type="button" value="X"></input>`;
     txtModal.setAttribute('class', "textModal");
     document.body.appendChild(txtModal);
+    txtModal.children[1].addEventListener('click', () => txtModal.remove());
     txtModal.addEventListener('submit', event => this.FormText_Handle(event, x, y));
     txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${y - txtModal.clientHeight / 2}px; left: ${x}px`);
   }
