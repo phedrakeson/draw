@@ -11,7 +11,7 @@ export default class Sketch extends Drawing {
     this.states = []
     this.color = "#000000"
     this.value = 2
-    this.user_draws = localStorage.getItem("user_draws") != null ? JSON.parse(localStorage.getItem("user_draws")) : []
+    this.user_sketches = localStorage.getItem("user_sketches") != null ? JSON.parse(localStorage.getItem("user_sketches")) : []
     this.handleStart = this.handleStart.bind(this);
     this.handleEnd = this.handleEnd.bind(this);
     this.handleMove = this.handleMove.bind(this);
@@ -27,8 +27,8 @@ export default class Sketch extends Drawing {
   UpdateSavesModal() {
     const modalSaves = document.getElementById('modalSaves');
     modalSaves.innerHTML = "";
-    if (this.user_draws.length > 0) 
-      this.user_draws.map(draw => modalSaves.innerHTML += `<div key="${draw.title}" class="save-box"><h3 class="save">${draw.title}</h3><button class="delete">X</button></div>`);
+    if (this.user_sketches.length > 0) 
+      this.user_sketches.map(sketch => modalSaves.innerHTML += `<div key="${sketch.title}" class="save-box"><h3 class="save">${sketch.title}</h3><button class="delete">X</button></div>`);
     else 
       modalSaves.innerHTML = `<h2 style="margin: 10px;">You have no saves !</h2>`;
     document.querySelectorAll('.save').forEach(save => save.addEventListener('click', event => this.Save_Handle(event)));
@@ -41,7 +41,7 @@ export default class Sketch extends Drawing {
   //#endregion
 
   //#region Screen recognitions
-  mouseRecognitions() {
+  MouseRecognitions() {
     this.canvas.addEventListener('mousedown', event => {
       if (document.getElementById('text').classList.contains("selected")) this.CreateTextModal(event.offsetX, event.offsetY);
       else if (document.querySelector(".polygon.selected")) {
@@ -72,7 +72,7 @@ export default class Sketch extends Drawing {
         } else {
           this.DrawCircle(x2, y2, this.value, this.color)
           this.DrawLine(this.x, this.y, x2, y2, this.value, this.color);
-          this.states.push({type: "Draw", x: x2, y: y2, prevX: this.x, prevY: this.y, size: this.value, colorStyle: this.color});
+          this.states.push({type: "sketch", x: x2, y: y2, prevX: this.x, prevY: this.y, size: this.value, colorStyle: this.color});
           this.x = x2;
           this.y = y2;
         }    
@@ -92,8 +92,8 @@ export default class Sketch extends Drawing {
   //#region Click/Key handlers
   Undo_Handle() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.states.forEach((draw, index) => {
-      if (index < this.states.length - 1) this.ReDraw(draw);
+    this.states.forEach((state, index) => {
+      if (index < this.states.length - 1) this.ReDraw(state);
       else this.states.pop();
     })
   }
@@ -111,28 +111,28 @@ export default class Sketch extends Drawing {
   }
 
   DeleteSave_Handle(e) {
-    this.user_draws = this.user_draws.filter(save => save.title != e.path[1].getAttribute("key"));
-    localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
+    this.user_sketches = this.user_sketches.filter(save => save.title != e.path[1].getAttribute("key"));
+    localStorage.setItem("user_sketches", JSON.stringify(this.user_sketches))
     this.UpdateSavesModal();
   }
 
   Save_Handle(e) {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    const selectedDraw = this.user_draws.find(save => save.title === e.target.innerHTML);
-    this.states = selectedDraw.draw;
-    this.canvas.style.backgroundColor = selectedDraw.backgroundColor;
-    selectedDraw.draw.map(draw => this.ReDraw(draw));
+    const selectedSketch = this.user_sketches.find(save => save.title === e.target.innerHTML);
+    this.states = selectedSketch.states;
+    this.canvas.style.backgroundColor = selectedSketch.backgroundColor;
+    selectedSketch.states.map(state => this.ReDraw(state));
   }
 
   FormSave_Handle(e) {
     e.preventDefault();
-    if (this.user_draws.some(draw => draw.title == e.target[0].value)) {
-      alert(`this title is already being used !`);
-      return;
+    if (this.user_sketches.some(sketch => sketch.title == e.target[0].value)) {
+      if (confirm(`This title is already been used by another sketch, do you want to update the sketch with the same name ?`))
+        this.user_sketches = this.user_sketches.filter(sketch => sketch.title != e.target[0].value);
+      else return;
     }
-
-    this.user_draws.push({draw: this.states, backgroundColor: this.canvas.style.backgroundColor, title: e.target[0].value})
-    localStorage.setItem("user_draws", JSON.stringify(this.user_draws))
+    this.user_sketches.push({states: this.states, backgroundColor: this.canvas.style.backgroundColor, title: e.target[0].value})
+    localStorage.setItem("user_sketches", JSON.stringify(this.user_sketches))
     e.target.reset();
     document.getElementById('modalSave').classList.toggle("desappear")
     this.UpdateSavesModal();
@@ -146,8 +146,10 @@ export default class Sketch extends Drawing {
 
   FormText_Handle(e, x, y) {
     e.preventDefault();
-    this.DrawText(e.target[0].value, x, y, this.color, this.value);
-    this.states.push({type: "text", text: e.target[0].value, x, y, size: this.value, colorStyle: this.color});
+    const posY = y + this.value / 2;
+    const posX = x - (this.value / 2) * e.target[0].value.length; // Returns the centered value based on each character of the text
+    this.DrawText(e.target[0].value, posX, posY, this.color, this.value);
+    this.states.push({type: "text", text: e.target[0].value, x: posX, y: posY, size: this.value, colorStyle: this.color});
     e.target.remove();
   }
   //#endregion
@@ -218,15 +220,15 @@ export default class Sketch extends Drawing {
   }
   //#endregion
 
-  setup() {
-    this.addEventListeners();
-    this.mouseRecognitions();
+  Setup() {
+    this.AddEventListeners();
+    this.MouseRecognitions();
     this.touchRecognitions();
   }
 
-  addEventListeners() {
+  AddEventListeners() {
     document.getElementById('canvas-color').addEventListener('input', event => this.canvas.style.backgroundColor = event.target.value);
-    document.getElementById('color').addEventListener('change', event => this.color = event.target.value);
+    document.getElementById('color').addEventListener('input', event => this.color = event.target.value);
     document.getElementById('decrease').addEventListener('click', () => this.DecreaseBtn_Handle());
     document.getElementById('increase').addEventListener('click', () => this.IncreaseBtn_Handle());
     document.getElementById('trash').addEventListener('click', () => this.CanvasClear_Handle());
@@ -236,7 +238,7 @@ export default class Sketch extends Drawing {
     document.getElementById("load").addEventListener('click', () => document.getElementById('modalSaves').classList.toggle("desappear"));
     document.getElementById("info").addEventListener('click', () => document.getElementById('modalInfo').classList.toggle("desappear"));
     window.addEventListener('resize', () => this.UpdateCanvasSize());
-    document.querySelectorAll('.icon.selectable').forEach(icon => icon.addEventListener('click', event => this.toggleTools(event)));
+    document.querySelectorAll('.icon.selectable').forEach(icon => icon.addEventListener('click', event => this.ToggleTools(event)));
     window.addEventListener('keydown', e => {
       switch (e.code) {
         case "Numpad1":
@@ -274,21 +276,19 @@ export default class Sketch extends Drawing {
     })
   }
   
-  toggleTools(e) {
+  ToggleTools(e) {
     document.querySelector(".icon.selected").classList.remove("selected");
-    document.querySelectorAll('.icon').forEach(icon => {
-      if (icon.id == e.target.id) icon.classList.add("selected");
-    })
+    e.target.classList.add("selected");
   }
 
   CreateTextModal(x, y) {
     this.pressed = false;
     const txtModal = document.createElement('form')
     txtModal.innerHTML = `<input type="text" placeholder="Insert the text here"/><input type="button" value="X"></input>`;
-    txtModal.setAttribute('class', "textModal");
     document.body.appendChild(txtModal);
     txtModal.children[1].addEventListener('click', () => txtModal.remove());
     txtModal.addEventListener('submit', event => this.FormText_Handle(event, x, y));
-    txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${y - txtModal.clientHeight / 2}px; left: ${x}px`);
+    txtModal.setAttribute('class', "textModal");
+    txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${y - txtModal.clientHeight / 2}px; left: ${x - txtModal.clientWidth / 2}px`);
   }
 }

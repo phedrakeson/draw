@@ -20,7 +20,7 @@ O projeto ainda está em desenvolvimento e as próximas atualizações serão vo
 - [x] Painel de configurações
 - [x] Possibilidade de limpar o board
 - [x] Melhorar UI
-- [ ] Possibilidade de realizar undo no canvas
+- [x] Possibilidade de realizar undo no canvas
 
 ## 📫 Contribuindo para o Draw
 

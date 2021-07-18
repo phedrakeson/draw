@@ -2,6 +2,7 @@
 
 .save {
   font-family: 'Parisienne', cursive;
+  display: inline;
   font-size: 1pc;
   margin: 5px;
   transition: 300ms;
@@ -30,11 +31,8 @@
 
 .save-box {
   transition: 300ms;
-  border-radius: 1rem;
   align-items: center;
   margin: 10px;
-  display: flex;
-  justify-content: space-evenly;
 }
 
 .save-box:hover, #modalSave input[type="submit"]:hover, #modalSave input[type="text"]:hover {transform: scale(1.05)}

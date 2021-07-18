@@ -33,14 +33,13 @@ export default class Drawing {
     }
     
     DrawTriangle(x, y, color, size) {
-        this.context.lineWidth = size;
         this.context.beginPath();
-        this.context.moveTo(x, y);
+        this.context.moveTo(x, y - size);
         this.context.lineTo(x - size, y + size);
         this.context.lineTo(x + size, y + size);
         this.context.closePath();
-        this.context.strokeStyle = color;
-        this.context.stroke()
+        this.context.fillStyle = color;
+        this.context.fill()
     }
     
     DrawRect(x, y, size, color) {
@@ -65,19 +64,19 @@ export default class Drawing {
         }
     }
 
-    ReDraw(draw) {
-        switch (draw.type) {
-            case "Draw":
-            this.DrawCircle(draw.x, draw.y, draw.size, draw.colorStyle)
-            this.DrawLine(draw.x, draw.y, draw.prevX, draw.prevY, draw.size, draw.colorStyle);
+    ReDraw(state) {
+        switch (state.type) {
+            case "sketch":
+            this.DrawCircle(state.x, state.y, state.size, state.colorStyle)
+            this.DrawLine(state.x, state.y, state.prevX, state.prevY, state.size, state.colorStyle);
             break;
 
             case "polygon":
-            this.DrawPolygon(draw.id, draw.x, draw.y, draw.colorStyle, draw.size);
+            this.DrawPolygon(state.id, state.x, state.y, state.colorStyle, state.size);
             break;
 
             case "text":
-            this.DrawText(draw.text, draw.x, draw.y, draw.colorStyle, draw.size);
+            this.DrawText(state.text, state.x, state.y, state.colorStyle, state.size);
             break;
         }
     }
