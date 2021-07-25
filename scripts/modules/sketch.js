@@ -8,7 +8,8 @@ export default class Sketch extends Drawing {
     this.y = undefined;
     this.lineWidthLimit = 76;
     this.ongoingTouches = new Array;
-    this.states = []
+    this.paths = new Array;
+    this.states = new Array;
     this.color = "#000000"
     this.value = 2
     this.user_sketches = localStorage.getItem("user_sketches") != null ? JSON.parse(localStorage.getItem("user_sketches")) : []
@@ -28,7 +29,7 @@ export default class Sketch extends Drawing {
     const modalSaves = document.getElementById('modalSaves');
     modalSaves.innerHTML = "";
     if (this.user_sketches.length > 0) 
-      this.user_sketches.map(sketch => modalSaves.innerHTML += `<div key="${sketch.title}" class="save-box"><h3 class="save">${sketch.title}</h3><button class="delete">X</button></div>`);
+      this.user_sketches.map(sketch => modalSaves.innerHTML += `<div class="save-box"><h3 key="${sketch.title}" class="save">${sketch.title.length > 7 ? sketch.title.slice(0, 7).trim() + "..." : sketch.title}</h3><button key="${sketch.title}" class="delete">X</button></div>`);
     else 
       modalSaves.innerHTML = `<h2 style="margin: 10px;">You have no saves !</h2>`;
     document.querySelectorAll('.save').forEach(save => save.addEventListener('click', event => this.Save_Handle(event)));
@@ -57,6 +58,8 @@ export default class Sketch extends Drawing {
     })
 
     this.canvas.addEventListener('mouseup', () => {
+      this.paths.push(this.states.length > 0 && new Array(...this.states));
+      this.states = [];
       this.pressed = false;
       this.x = undefined;
       this.y = undefined;
@@ -92,9 +95,9 @@ export default class Sketch extends Drawing {
   //#region Click/Key handlers
   Undo_Handle() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.states.forEach((state, index) => {
-      if (index < this.states.length - 1) this.ReDraw(state);
-      else this.states.pop();
+    this.paths.forEach((path, index) => {
+      if (index < this.paths.length - 1) path.map(state => this.ReDraw(state));
+      else this.paths.pop();
     })
   }
 
@@ -111,27 +114,28 @@ export default class Sketch extends Drawing {
   }
 
   DeleteSave_Handle(e) {
-    this.user_sketches = this.user_sketches.filter(save => save.title != e.path[1].getAttribute("key"));
+    this.user_sketches = this.user_sketches.filter(save => save.title != e.target.getAttribute("key"));
     localStorage.setItem("user_sketches", JSON.stringify(this.user_sketches))
     this.UpdateSavesModal();
   }
 
   Save_Handle(e) {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    const selectedSketch = this.user_sketches.find(save => save.title === e.target.innerHTML);
-    this.states = selectedSketch.states;
+    const selectedSketch = this.user_sketches.find(save => save.title === e.target.getAttribute("key"));
+    this.paths = selectedSketch.paths;
     this.canvas.style.backgroundColor = selectedSketch.backgroundColor;
-    selectedSketch.states.map(state => this.ReDraw(state));
+    selectedSketch.paths.map(path => path.map(state => this.ReDraw(state)));
   }
 
   FormSave_Handle(e) {
     e.preventDefault();
-    if (this.user_sketches.some(sketch => sketch.title == e.target[0].value)) {
+    const title = e.target[0].value.trim();
+    if (this.user_sketches.some(sketch => sketch.title == title)) {
       if (confirm(`This title is already been used by another sketch, do you want to update the sketch with the same name ?`))
-        this.user_sketches = this.user_sketches.filter(sketch => sketch.title != e.target[0].value);
+        this.user_sketches = this.user_sketches.filter(sketch => sketch.title != title);
       else return;
     }
-    this.user_sketches.push({states: this.states, backgroundColor: this.canvas.style.backgroundColor, title: e.target[0].value})
+    this.user_sketches.push({paths: this.paths, backgroundColor: this.canvas.style.backgroundColor, title})
     localStorage.setItem("user_sketches", JSON.stringify(this.user_sketches))
     e.target.reset();
     document.getElementById('modalSave').classList.toggle("desappear")
@@ -139,8 +143,9 @@ export default class Sketch extends Drawing {
   }
 
   CanvasClear_Handle() {
-    this.canvas.style.backgroundColor = "#EEEE";
     this.states = [];
+    this.paths = [];
+    this.canvas.style.backgroundColor = "#EEEE";
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
@@ -149,7 +154,7 @@ export default class Sketch extends Drawing {
     const posY = y + this.value / 2;
     const posX = x - (this.value / 2) * e.target[0].value.length; // Returns the centered value based on each character of the text
     this.DrawText(e.target[0].value, posX, posY, this.color, this.value);
-    this.states.push({type: "text", text: e.target[0].value, x: posX, y: posY, size: this.value, colorStyle: this.color});
+    this.paths.push(new Array({type: "text", text: e.target[0].value, x: posX, y: posY, size: this.value, colorStyle: this.color}));
     e.target.remove();
   }
   //#endregion
