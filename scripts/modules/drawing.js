@@ -64,19 +64,21 @@ export default class Drawing {
         }
     }
 
-    ReDraw(state) {
-        switch (state.type) {
+    ReDraw(states, type, colorStyle) {
+        switch (type) {
             case "sketch":
-            this.DrawCircle(state.x, state.y, state.size, state.colorStyle)
-            this.DrawLine(state.x, state.y, state.prevX, state.prevY, state.size, state.colorStyle);
+            states.forEach(state => {
+                this.DrawCircle(state.x, state.y, state.size, colorStyle)
+                this.DrawLine(state.x, state.y, state.prevX, state.prevY, state.size, colorStyle);
+            });
             break;
 
             case "polygon":
-            this.DrawPolygon(state.id, state.x, state.y, state.colorStyle, state.size);
+            this.DrawPolygon(states.id, states.x, states.y, colorStyle, states.size)
             break;
 
             case "text":
-            this.DrawText(state.text, state.x, state.y, state.colorStyle, state.size);
+            this.DrawText(states.text, states.x, states.y, colorStyle, states.size)
             break;
         }
     }

@@ -47,7 +47,7 @@ export default class Sketch extends Drawing {
       if (document.getElementById('text').classList.contains("selected")) this.CreateTextModal(event.offsetX, event.offsetY);
       else if (document.querySelector(".polygon.selected")) {
         const id = document.querySelector(".polygon.selected").id;
-        this.states.push({type: "polygon", id, x: event.offsetX, y: event.offsetY, size: this.value, colorStyle: this.color});
+        this.paths.push({ states: {id, x: event.offsetX, y: event.offsetY, size: this.value}, type: "polygon", colorStyle: this.color});
         this.DrawPolygon(id, event.offsetX, event.offsetY, this.color, this.value);
       }
       else {
@@ -58,8 +58,10 @@ export default class Sketch extends Drawing {
     })
 
     this.canvas.addEventListener('mouseup', () => {
-      this.paths.push(this.states.length > 0 && new Array(...this.states));
-      this.states = [];
+      if (this.states.length > 0) {
+        this.paths.push({ states: new Array(...this.states), type: "sketch", colorStyle: this.color});
+        this.states = [];
+      }
       this.pressed = false;
       this.x = undefined;
       this.y = undefined;
@@ -75,7 +77,7 @@ export default class Sketch extends Drawing {
         } else {
           this.DrawCircle(x2, y2, this.value, this.color)
           this.DrawLine(this.x, this.y, x2, y2, this.value, this.color);
-          this.states.push({type: "sketch", x: x2, y: y2, prevX: this.x, prevY: this.y, size: this.value, colorStyle: this.color});
+          this.states.push({x: x2, y: y2, prevX: this.x, prevY: this.y, size: this.value});
           this.x = x2;
           this.y = y2;
         }    
@@ -96,8 +98,10 @@ export default class Sketch extends Drawing {
   Undo_Handle() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.paths.forEach((path, index) => {
-      if (index < this.paths.length - 1) path.map(state => this.ReDraw(state));
-      else this.paths.pop();
+      if (index < this.paths.length - 1) 
+        this.ReDraw(path.states, path.type, path.colorStyle);
+      else 
+        this.paths.pop();
     })
   }
 
@@ -124,7 +128,7 @@ export default class Sketch extends Drawing {
     const selectedSketch = this.user_sketches.find(save => save.title === e.target.getAttribute("key"));
     this.paths = selectedSketch.paths;
     this.canvas.style.backgroundColor = selectedSketch.backgroundColor;
-    selectedSketch.paths.map(path => path.map(state => this.ReDraw(state)));
+    selectedSketch.paths.map(path => this.ReDraw(path.states, path.type, path.colorStyle));
   }
 
   FormSave_Handle(e) {
@@ -154,7 +158,7 @@ export default class Sketch extends Drawing {
     const posY = y + this.value / 2;
     const posX = x - (this.value / 2) * e.target[0].value.length; // Returns the centered value based on each character of the text
     this.DrawText(e.target[0].value, posX, posY, this.color, this.value);
-    this.paths.push(new Array({type: "text", text: e.target[0].value, x: posX, y: posY, size: this.value, colorStyle: this.color}));
+    this.paths.push({states: { text: e.target[0].value, x: posX, y: posY, size: this.value}, type: "text", colorStyle: this.color});
     e.target.remove();
   }
   //#endregion
