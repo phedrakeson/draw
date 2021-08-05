@@ -99,7 +99,7 @@ export default class Sketch extends Drawing {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.paths.forEach((path, index) => {
       if (index < this.paths.length - 1) 
-        this.ReDraw(path.states, path.type, path.colorStyle);
+        this.ReDraw(path);
       else 
         this.paths.pop();
     })
@@ -128,7 +128,7 @@ export default class Sketch extends Drawing {
     const selectedSketch = this.user_sketches.find(save => save.title === e.target.getAttribute("key"));
     this.paths = selectedSketch.paths;
     this.canvas.style.backgroundColor = selectedSketch.backgroundColor;
-    selectedSketch.paths.map(path => this.ReDraw(path.states, path.type, path.colorStyle));
+    selectedSketch.paths.map(path => this.ReDraw(path));
   }
 
   FormSave_Handle(e) {
@@ -160,6 +160,11 @@ export default class Sketch extends Drawing {
     this.DrawText(e.target[0].value, posX, posY, this.color, this.value);
     this.paths.push({states: { text: e.target[0].value, x: posX, y: posY, size: this.value}, type: "text", colorStyle: this.color});
     e.target.remove();
+  }
+
+  TextPreview_Handle(event, element) {
+    element.setAttribute("style", `background-color: ${this.canvas.style.backgroundColor}; font-size: ${this.value * 2}px; color: ${this.color}`)
+    element.innerText = event.target.value;
   }
   //#endregion
 
@@ -293,11 +298,12 @@ export default class Sketch extends Drawing {
   CreateTextModal(x, y) {
     this.pressed = false;
     const txtModal = document.createElement('form')
-    txtModal.innerHTML = `<input type="text" placeholder="Insert the text here"/><input type="button" value="X"></input>`;
+    txtModal.innerHTML = `<p>The preview goes here !</p><div><input type="text" placeholder="Insert the text here"/><input type="button" value="X"></input></div>`;
     document.body.appendChild(txtModal);
-    txtModal.children[1].addEventListener('click', () => txtModal.remove());
+    txtModal.children[1].children[1].addEventListener('click', () => txtModal.remove());
+    txtModal.children[1].children[0].addEventListener('input', e => this.TextPreview_Handle(e, txtModal.children[0]));
     txtModal.addEventListener('submit', event => this.FormText_Handle(event, x, y));
     txtModal.setAttribute('class', "textModal");
-    txtModal.setAttribute('style', `position: absolute; z-index: 99; top: ${y - txtModal.clientHeight / 2}px; left: ${x - txtModal.clientWidth / 2}px`);
+    txtModal.setAttribute('style', `top: ${y - txtModal.clientHeight / 2}px; left: ${x - txtModal.clientWidth / 2}px`);
   }
 }

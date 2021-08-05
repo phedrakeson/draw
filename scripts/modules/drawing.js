@@ -25,7 +25,7 @@ export default class Drawing {
         this.context.fill()
     }
     
-    DrawText(text, x, y, color, size, font = "serif") {
+    DrawText(text, x, y, color, size, font = "sans-serif") {
         this.context.beginPath();
         this.context.font = `${size * 2}px ${font}`;
         this.context.fillStyle = color;
@@ -64,7 +64,7 @@ export default class Drawing {
         }
     }
 
-    ReDraw(states, type, colorStyle) {
+    ReDraw({states, type, colorStyle}) {
         switch (type) {
             case "sketch":
             states.forEach(state => {

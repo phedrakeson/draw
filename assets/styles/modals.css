@@ -44,6 +44,9 @@
   border-radius: .4rem;
   display: flex;
   align-items: center;
+  position: absolute; 
+  z-index: 99;
+  flex-direction: column;
 }
 
 .textModal input {
@@ -53,6 +56,12 @@
 }
 
 .textModal input::placeholder {text-align: center}
+
+.textModal p {
+  padding: 7px;
+  border-radius: 4rem;
+  font-family: sans-serif;
+}
 
 #modalInfo {
   z-index: 99;
