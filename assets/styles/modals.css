@@ -50,18 +50,14 @@
 }
 
 .textModal input {
+  max-width: 200px;
+  max-height: 170px;
   margin: 5px;
   border-radius: .3rem;
   padding: 3px;
 }
 
 .textModal input::placeholder {text-align: center}
-
-.textModal p {
-  padding: 7px;
-  border-radius: 4rem;
-  font-family: sans-serif;
-}
 
 #modalInfo {
   z-index: 99;

@@ -12,7 +12,7 @@ export default class Sketch extends Drawing {
     this.states = new Array;
     this.color = "#000000"
     this.value = 2
-    this.user_sketches = localStorage.getItem("user_sketches") != null ? JSON.parse(localStorage.getItem("user_sketches")) : []
+    this.user_sketches = JSON.parse(localStorage.getItem("user_sketches")) || []
     this.handleStart = this.handleStart.bind(this);
     this.handleEnd = this.handleEnd.bind(this);
     this.handleMove = this.handleMove.bind(this);
@@ -42,12 +42,12 @@ export default class Sketch extends Drawing {
   //#endregion
 
   //#region Screen recognitions
-  MouseRecognitions() {
+MouseRecognitions() {
     this.canvas.addEventListener('mousedown', event => {
       if (document.getElementById('text').classList.contains("selected")) this.CreateTextModal(event.offsetX, event.offsetY);
       else if (document.querySelector(".polygon.selected")) {
         const id = document.querySelector(".polygon.selected").id;
-        this.paths.push({ states: {id, x: event.offsetX, y: event.offsetY, size: this.value}, type: "polygon", colorStyle: this.color});
+        this.paths.push({ states: {id, x: event.offsetX, y: event.offsetY, size: this.value}, type: "polygon", colorStyle: this.color, erasedStates: new Array()});
         this.DrawPolygon(id, event.offsetX, event.offsetY, this.color, this.value);
       }
       else {
@@ -59,7 +59,7 @@ export default class Sketch extends Drawing {
 
     this.canvas.addEventListener('mouseup', () => {
       if (this.states.length > 0) {
-        this.paths.push({ states: new Array(...this.states), type: "sketch", colorStyle: this.color});
+        this.paths.push({ states: new Array(...this.states), type: "sketch", colorStyle: this.color, erasedStates: new Array()});
         this.states = [];
       }
       this.pressed = false;
@@ -73,6 +73,7 @@ export default class Sketch extends Drawing {
         const y2 = event.offsetY;
         if (document.getElementById('eraser').classList.contains("selected")) {
           const size = this.value * 4;
+          this.paths[this.paths.length - 1].erasedStates.push({x: x2 - size / 2, y: y2 - size / 2, size});
           this.context.clearRect(x2 - size / 2, y2 - size / 2, size, size);
         } else {
           this.DrawCircle(x2, y2, this.value, this.color)
@@ -154,17 +155,10 @@ export default class Sketch extends Drawing {
   }
 
   FormText_Handle(e, x, y) {
-    e.preventDefault();
-    const posY = y + this.value / 2;
-    const posX = x - (this.value / 2) * e.target[0].value.length; // Returns the centered value based on each character of the text
-    this.DrawText(e.target[0].value, posX, posY, this.color, this.value);
-    this.paths.push({states: { text: e.target[0].value, x: posX, y: posY, size: this.value}, type: "text", colorStyle: this.color});
+    e.preventDefault(); 
+    this.DrawText(e.target[0].value, x, y, this.color, this.value);
+    this.paths.push({states: { text: e.target[0].value, x, y, size: this.value}, type: "text", colorStyle: this.color, erasedStates: new Array()});
     e.target.remove();
-  }
-
-  TextPreview_Handle(event, element) {
-    element.setAttribute("style", `background-color: ${this.canvas.style.backgroundColor}; font-size: ${this.value * 2}px; color: ${this.color}`)
-    element.innerText = event.target.value;
   }
   //#endregion
 
@@ -298,11 +292,11 @@ export default class Sketch extends Drawing {
   CreateTextModal(x, y) {
     this.pressed = false;
     const txtModal = document.createElement('form')
-    txtModal.innerHTML = `<p>The preview goes here !</p><div><input type="text" placeholder="Insert the text here"/><input type="button" value="X"></input></div>`;
+    txtModal.innerHTML = `<input type="text" placeholder="Insert the text here"/><input type="button" value="X" />`;
     document.body.appendChild(txtModal);
-    txtModal.children[1].children[1].addEventListener('click', () => txtModal.remove());
-    txtModal.children[1].children[0].addEventListener('input', e => this.TextPreview_Handle(e, txtModal.children[0]));
-    txtModal.addEventListener('submit', event => this.FormText_Handle(event, x, y));
+    txtModal.children[1].addEventListener('click', () => txtModal.remove());
+    txtModal.children[0].addEventListener('input', e => e.target.setAttribute("style", `background-color: ${this.canvas.style.backgroundColor}; font-size: ${this.value * 2}px; color: ${this.color}`));
+    txtModal.addEventListener('submit', e => this.FormText_Handle(e, x, y));
     txtModal.setAttribute('class', "textModal");
     txtModal.setAttribute('style', `top: ${y - txtModal.clientHeight / 2}px; left: ${x - txtModal.clientWidth / 2}px`);
   }

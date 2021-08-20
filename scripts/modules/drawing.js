@@ -29,7 +29,7 @@ export default class Drawing {
         this.context.beginPath();
         this.context.font = `${size * 2}px ${font}`;
         this.context.fillStyle = color;
-        this.context.fillText(text, x, y);
+        this.context.fillText(text, x - size / 2 * text.length, y + size / 2);
     }
     
     DrawTriangle(x, y, color, size) {
@@ -64,7 +64,7 @@ export default class Drawing {
         }
     }
 
-    ReDraw({states, type, colorStyle}) {
+    ReDraw({states, type, colorStyle, erasedStates}) {
         switch (type) {
             case "sketch":
             states.forEach(state => {
@@ -81,5 +81,6 @@ export default class Drawing {
             this.DrawText(states.text, states.x, states.y, colorStyle, states.size)
             break;
         }
+        if(erasedStates.length > 0) erasedStates.forEach(erasedState => this.context.clearRect(erasedState.x, erasedState.y, erasedState.size, erasedState.size));
     }
 }
