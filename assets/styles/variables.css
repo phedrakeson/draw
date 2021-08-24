@@ -1,0 +1,15 @@
+:root {
+    --configs-backgroundColor: #2e3131;
+    --configs-shadow: rgba(46, 49, 49, 0.6);
+    --selected-icon: #1c1c1c;
+    --footer-backgroundColor: #2574a9;
+    --modal-fontColor: rgb(220, 202, 202);
+    --modal-borderColor: rgb(150, 90, 44);
+    --modal-backgroundColor: rgb(27, 89, 27);
+    --modal-shadow: #a3a3a3;
+    --modalSaves-deleteBtn-backgroundColor: rgb(41, 41, 41);
+    --textModal-backgroundColor: #444444;
+    --modalSave-inputSubmitHover-backgroundColor: black;
+    --modalSave-inputSubmitHover-fontColor: white;
+    --modalSave-inputTextFocus-shadow: rgb(17, 58, 17);
+}
